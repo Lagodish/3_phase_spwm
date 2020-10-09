@@ -5,8 +5,7 @@
 #include <ArduinoOTA.h>
 #include <esp_task_wdt.h>
 
-//3 seconds WDT
-#define WDT_TIMEOUT 3
+#define WDT_TIMEOUT 3 //3 seconds WDT
 
 TaskHandle_t Task1;
 TaskHandle_t Task2;
