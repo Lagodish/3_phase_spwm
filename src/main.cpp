@@ -3,7 +3,7 @@
 #include <ESPmDNS.h>
 #include <WiFiUdp.h>
 #include <ArduinoOTA.h>
-#include <esp_task_wdt.h>
+//#include <esp_task_wdt.h>
 
 #define WDT_TIMEOUT 3 //3 seconds WDT
 
@@ -18,6 +18,7 @@ const int H2 = 25;
 const int H3 = 27;   
 
 const int shunt = 32;
+
 // setting PWM properties
 const int freq = 24000;
 const int L1_val = 0;
@@ -41,8 +42,9 @@ void setup() {
   Serial.println("Frequency_3Ph_Gen");
   //wifi_set();
   //ota_start();
-  esp_task_wdt_init(WDT_TIMEOUT, true); //enable panic so ESP32 restarts
-  esp_task_wdt_add(NULL); //add current thread to WDT watch
+  //esp_task_wdt_init(WDT_TIMEOUT, false); //enable panic so ESP32 restarts
+  //esp_task_wdt_add(NULL); //add current thread to WDT watch
+  disableCore0WDT();
 
   // configure LED PWM functionalitites
   ledcSetup(L1_val, freq, resolution);
@@ -94,4 +96,6 @@ void setup() {
 
 void loop()
 {
+  //esp_task_wdt_reset();
+  vTaskDelete(NULL);
 }

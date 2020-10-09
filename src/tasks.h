@@ -1,8 +1,9 @@
 #include <Arduino.h>
 
 double k = 0.01;
-double step = 0.01;
+double step = 0.005;
 int delay_time = 80;
+int timeout = 0;
 
 void motor(int H1_,int H2_,int H3_, int L1_,int L2_,int L3_){
     H1_=H1_*k; 
@@ -109,8 +110,15 @@ void SPWM( void * parameter)
         delayMicroseconds(delay_time);
         
         if(Cycle==480){
+        //esp_task_wdt_reset();
+        timeout++;
+        if(timeout==3000){  //ПЛАВНЫЙ СТОП
+             step = -0.01;
+        }
         if(k>1) {k=1; step = 0;}
-        else{delay_time = map(k*100, 0.0, 100.0, 90, 3); k += step;}
+        else{k += step; delay_time = map(k*100, 0.0, 100.0, 90, 3);} //ПЛАВНЫЙ СТАРТ
+
+        if(k<0.01){emergency = true; k=0.01; step = 0;} //Полное торможение
         }
 
     }}
@@ -121,7 +129,7 @@ void SPWM( void * parameter)
         ledcWrite(H1_val, 0);
         ledcWrite(H2_val, 0);
         ledcWrite(H3_val, 0);
-
+        Serial.println("Emergency stop!");
         max = 0;
         k=0.01;
         step = 0.01;
@@ -139,7 +147,8 @@ void Servises( void * parameter)
     while(1){
         Serial.print("Servises running on core ");
         Serial.println(xPortGetCoreID());
-        esp_task_wdt_reset();
+        //esp_task_wdt_reset();
+        yield();
         vTaskDelay(1000);
     }
 
