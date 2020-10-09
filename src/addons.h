@@ -1,5 +1,5 @@
-const char* ssid = "Psin(a)";
-const char* password = "Hey!28R0om!";
+const char* ssid = "Psin(a)";  //Название сети!
+const char* password = "Hey!28R0om!"; //Пароль!
 
 void wifi_set(){
     WiFi.mode(WIFI_STA);

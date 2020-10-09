@@ -40,8 +40,8 @@ void setup() {
   Serial.begin(115200);
   Serial.println("Booting");
   Serial.println("Frequency_3Ph_Gen");
-  //wifi_set();
-  //ota_start();
+  wifi_set();
+  ota_start();
   //esp_task_wdt_init(WDT_TIMEOUT, false); //enable panic so ESP32 restarts
   //esp_task_wdt_add(NULL); //add current thread to WDT watch
   disableCore0WDT();
@@ -96,6 +96,5 @@ void setup() {
 
 void loop()
 {
-  //esp_task_wdt_reset();
   vTaskDelete(NULL);
 }

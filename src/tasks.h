@@ -147,8 +147,7 @@ void Servises( void * parameter)
     while(1){
         Serial.print("Servises running on core ");
         Serial.println(xPortGetCoreID());
-        //esp_task_wdt_reset();
-        yield();
+        ArduinoOTA.handle();
         vTaskDelay(1000);
     }
 
