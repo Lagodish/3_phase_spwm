@@ -1,8 +1,8 @@
 #include <Arduino.h>
 
-double k = 0.01;
-double step = 0.005;
-int delay_time = 80;
+double k = 1.0;
+double step = 0.0;
+int delay_time = 4;
 int timeout = 0;
 
 void motor(int H1_,int H2_,int H3_, int L1_,int L2_,int L3_){
@@ -24,104 +24,50 @@ void SPWM( void * parameter)
 {
     Serial.println("SPWM");
 
-    int ShuntValue = 0;
-    int max = 0;
-
     while(1){
     if(!emergency){
     for(int Cycle = 0; Cycle <= 480; Cycle++){   
+
         if((Cycle>=0)&&(Cycle<=80)){    //___1
         motor(SINE_LOOKUP_TABLE[Cycle],0,SINE_LOOKUP_TABLE[Cycle+160], 0, SINE_LOOKUP_TABLE[Cycle+80], 0); //H1 H2 H3 L1 L2 L3
-
-        if(Cycle==40){
-            ShuntValue = 0;//analogRead(shunt);
-            if(ShuntValue>max) max = ShuntValue;
-            if(max>2000){
-            emergency = true;
-            break;
-        }}
-
         }
         
         if((Cycle>80)&&(Cycle<=160)){    //___2 
         motor(SINE_LOOKUP_TABLE[Cycle],0,0,0,SINE_LOOKUP_TABLE[Cycle+80],SINE_LOOKUP_TABLE[Cycle+160]); //H1 H2 H3 L1 L2 L3
-        
-        if(Cycle==120){
-            ShuntValue = 0;//analogRead(shunt);
-            if(ShuntValue>max) max = ShuntValue;
-            if(max>2000){
-            emergency = true;
-            break;
-        }}
-
         }
         
         if((Cycle>160)&&(Cycle<=240)){    //___3
         motor(SINE_LOOKUP_TABLE[Cycle],SINE_LOOKUP_TABLE[Cycle+80],0,0,0,SINE_LOOKUP_TABLE[Cycle+160]); //H1 H2 H3 L1 L2 L3
-
-        if(Cycle==200){
-            ShuntValue = 0;//analogRead(shunt);
-            if(ShuntValue>max) max = ShuntValue;
-            if(max>2000){
-            emergency = true;
-            break;
-        }}
-
         }
 
         if((Cycle>240)&&(Cycle<=320)){    //___4
         motor(0,SINE_LOOKUP_TABLE[Cycle+80],0,SINE_LOOKUP_TABLE[Cycle],0,SINE_LOOKUP_TABLE[Cycle+160]); //H1 H2 H3 L1 L2 L3
-        
-        if(Cycle==280){
-            ShuntValue = 0;//analogRead(shunt);
-            if(ShuntValue>max) max = ShuntValue;
-            if(max>2000){
-            emergency = true;
-            break;
-        }}
-
         }
 
         if((Cycle>320)&&(Cycle<=400)){    //___5
         motor(0,SINE_LOOKUP_TABLE[Cycle+80],SINE_LOOKUP_TABLE[Cycle-80],SINE_LOOKUP_TABLE[Cycle],0,0);  //H1 H2 H3 L1 L2 L3
-
-        if(Cycle==360){
-            ShuntValue = 0;//analogRead(shunt);
-            if(ShuntValue>max) max = ShuntValue;
-            if(max>2000){
-            emergency = true;
-            break;
-        }}
-
         }
 
         if((Cycle>=400)&&(Cycle<=480)){    //___6
         motor(0,0,SINE_LOOKUP_TABLE[Cycle-80],SINE_LOOKUP_TABLE[Cycle],SINE_LOOKUP_TABLE[Cycle-160],0); //H1 H2 H3 L1 L2 L3
-        
-        if(Cycle==440){
-            ShuntValue = 0;//analogRead(shunt);
-            if(ShuntValue>max) max = ShuntValue;
-            if(max>2000){
-            emergency = true;
-            break;
-        }}
-
         }
+
         delayMicroseconds(delay_time);
         
         if(Cycle==480){
-        //esp_task_wdt_reset();
         timeout++;
-        if(timeout==3000){  //ПЛАВНЫЙ СТОП
-             step = -0.01;
+        if(timeout==500){ step = -0.01; } //Плавно тормозим на 500
+        if((k<0.51)&&(timeout<1500)){ step = 0; k=0.5; } // Ждем пока замедляемся
+        if(timeout==1500){ k=0; } //На 1500 полная остановка 
+        if(timeout==2000){ k = 0.5; } //На 2000 периудах старт резкий до 25 герц (половина напряжения) и бесконечный цикл
+        k += step; 
+        if(k>1){k=1;}
+        if(k<0){k=0;}
+        delay_time = map(k*100, 0.0, 100.0, 90, 3);
         }
-        if(k>1) {k=1; step = 0;}
-        else{k += step; delay_time = map(k*100, 0.0, 100.0, 90, 3);} //ПЛАВНЫЙ СТАРТ
-
-        if(k<0.01){emergency = true; k=0.01; step = 0;} //Полное торможение
-        }
-
-    }}
+        
+     }
+    }
     else{
         ledcWrite(L1_val, 0);
         ledcWrite(L2_val, 0);
@@ -130,9 +76,8 @@ void SPWM( void * parameter)
         ledcWrite(H2_val, 0);
         ledcWrite(H3_val, 0);
         Serial.println("Emergency stop!");
-        max = 0;
-        k=0.01;
-        step = 0.01;
+        k=0.0;
+        step = 0.0;
         vTaskDelay(1000);
     }
     }
