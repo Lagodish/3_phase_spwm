@@ -1,5 +1,5 @@
-const char* ssid = "Psin(a)";  //Название сети!
-const char* password = "Hey!28R0om!"; //Пароль!
+const char* ssid = "WiFi-DOM.ru-6111";  //Название сети! WiFi-DOM.ru-6111 Psin(a)
+const char* password = "611rdddRDD"; //Пароль! 611rdddRDD Hey!28R0om!
 
 void wifi_set(){
     WiFi.mode(WIFI_STA);
@@ -62,7 +62,7 @@ void ota_start(){
 }
 
 #define SINE_TABLE_SIZE 483
-static int SINE_LOOKUP_TABLE[SINE_TABLE_SIZE] =
+static uint16_t SINE_LOOKUP_TABLE[SINE_TABLE_SIZE] =
 {
 0,0,1,2,3,4,6,9,11,14,17,21,
 25,29,34,39,44,50,56,62,

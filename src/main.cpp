@@ -3,9 +3,6 @@
 #include <ESPmDNS.h>
 #include <WiFiUdp.h>
 #include <ArduinoOTA.h>
-//#include <esp_task_wdt.h>
-
-#define WDT_TIMEOUT 3 //3 seconds WDT
 
 TaskHandle_t Task1;
 TaskHandle_t Task2;
@@ -20,7 +17,7 @@ const int H3 = 27;
 const int shunt = 32;
 
 // setting PWM properties
-const int freq = 24000;
+const int freq = 6000;
 const int L1_val = 0;
 const int L2_val = 1;
 const int L3_val = 2;
@@ -42,9 +39,9 @@ void setup() {
   Serial.println("Frequency_3Ph_Gen");
   wifi_set();
   ota_start();
-  //esp_task_wdt_init(WDT_TIMEOUT, false); //enable panic so ESP32 restarts
-  //esp_task_wdt_add(NULL); //add current thread to WDT watch
-  disableCore0WDT();
+
+  //disableCore0WDT();
+  //disableCore1WDT();
 
   // configure LED PWM functionalitites
   ledcSetup(L1_val, freq, resolution);
@@ -62,8 +59,6 @@ void setup() {
   ledcAttachPin(H2, H2_val);
   ledcAttachPin(H3, H3_val);
 
-  pinMode(shunt, INPUT);
-
   ledcWrite(L1_val, 0);
   ledcWrite(L2_val, 0);
   ledcWrite(L3_val, 0);
@@ -72,29 +67,27 @@ void setup() {
   ledcWrite(H3_val, 0);
 
   xTaskCreatePinnedToCore(
-    SPWM,             /* Task function. */
-    "SPWM",           /* String with name of task. */
-    10000,            /* Stack size in bytes. */
-    NULL,             /* Parameter passed as input of the task */
-    2,                /* Priority of the task. */
-    &Task1,           /* Task handle. */
-    0);               /* Core 0 */ 
-
-  delay(500); 
-
-  xTaskCreatePinnedToCore(
     Servises,         /* Task function. */
     "Servises",       /* String with name of task. */
     8000,             /* Stack size in bytes. */
     NULL,             /* Parameter passed as input of the task */
     1,                /* Priority of the task. */
     &Task2,           /* Task handle. */
-    1);               /* Core 1 */
+    0);               /* Core 1 */
 
-  delay(500);
+  xTaskCreatePinnedToCore(
+    SPWM,             /* Task function. */
+    "SPWM",           /* String with name of task. */
+    8000,            /* Stack size in bytes. */
+    NULL,             /* Parameter passed as input of the task */
+    1,                /* Priority of the task. */
+    &Task1,           /* Task handle. */
+    1);               /* Core 1 */ 
+
+
 }
 
 void loop()
 {
-  vTaskDelete(NULL);
+   vTaskDelete(NULL);
 }

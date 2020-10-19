@@ -1,9 +1,9 @@
 #include <Arduino.h>
 
-double k = 1.0;
-double step = 0.0;
+double k = 0.1;
+double step = 0.001;
 int delay_time = 4;
-int timeout = 0;
+
 
 void motor(int H1_,int H2_,int H3_, int L1_,int L2_,int L3_){
     H1_=H1_*k; 
@@ -23,12 +23,13 @@ void motor(int H1_,int H2_,int H3_, int L1_,int L2_,int L3_){
 void SPWM( void * parameter)
 {
     Serial.println("SPWM");
-
+    int Cycle = 0;
     while(1){
     if(!emergency){
-    for(int Cycle = 0; Cycle <= 480; Cycle++){   
 
-        if((Cycle>=0)&&(Cycle<=80)){    //___1
+    for(Cycle = 0; Cycle <= 480; Cycle=Cycle+2){   
+
+        if((Cycle>0)&&(Cycle<=80)){    //___1
         motor(SINE_LOOKUP_TABLE[Cycle],0,SINE_LOOKUP_TABLE[Cycle+160], 0, SINE_LOOKUP_TABLE[Cycle+80], 0); //H1 H2 H3 L1 L2 L3
         }
         
@@ -41,33 +42,28 @@ void SPWM( void * parameter)
         }
 
         if((Cycle>240)&&(Cycle<=320)){    //___4
-        motor(0,SINE_LOOKUP_TABLE[Cycle+80],0,SINE_LOOKUP_TABLE[Cycle],0,SINE_LOOKUP_TABLE[Cycle+160]); //H1 H2 H3 L1 L2 L3
+        motor(0,SINE_LOOKUP_TABLE[Cycle+80],0,SINE_LOOKUP_TABLE[Cycle],0,SINE_LOOKUP_TABLE[Cycle-80]); //H1 H2 H3 L1 L2 L3
         }
 
         if((Cycle>320)&&(Cycle<=400)){    //___5
-        motor(0,SINE_LOOKUP_TABLE[Cycle+80],SINE_LOOKUP_TABLE[Cycle-80],SINE_LOOKUP_TABLE[Cycle],0,0);  //H1 H2 H3 L1 L2 L3
+        motor(0,SINE_LOOKUP_TABLE[Cycle-160],SINE_LOOKUP_TABLE[Cycle-80],SINE_LOOKUP_TABLE[Cycle],0,0);  //H1 H2 H3 L1 L2 L3
         }
 
-        if((Cycle>=400)&&(Cycle<=480)){    //___6
+        if((Cycle>400)&&(Cycle<=480)){    //___6
         motor(0,0,SINE_LOOKUP_TABLE[Cycle-80],SINE_LOOKUP_TABLE[Cycle],SINE_LOOKUP_TABLE[Cycle-160],0); //H1 H2 H3 L1 L2 L3
         }
-
-        delayMicroseconds(delay_time);
         
-        if(Cycle==480){
-        timeout++;
-        if(timeout==500){ step = -0.01; } //Плавно тормозим на 500
-        if((k<0.51)&&(timeout<1500)){ step = 0; k=0.5; } // Ждем пока замедляемся
-        if(timeout==1500){ k=0; } //На 1500 полная остановка 
-        if(timeout==2000){ k = 0.5; } //На 2000 периудах старт резкий до 25 герц (половина напряжения) и бесконечный цикл
-        k += step; 
-        if(k>1){k=1;}
-        if(k<0){k=0;}
-        delay_time = map(k*100, 0.0, 100.0, 90, 3);
+        delayMicroseconds(45);//45 mc - 50 Hz
+
+        
+        if(Cycle==480){ //Функция разгона
+        k=k+step;  
+        if(k>1){k=1.0;step=0.0;}
+        if(k<0){k=0.0;step=0.0;}
+        //delay_time = map(k*100, 0.0, 100.0, 90, 3);
         }
         
-     }
-    }
+    }}
     else{
         ledcWrite(L1_val, 0);
         ledcWrite(L2_val, 0);
@@ -90,8 +86,6 @@ void Servises( void * parameter)
 {
     Serial.println("Servises");
     while(1){
-        Serial.print("Servises running on core ");
-        Serial.println(xPortGetCoreID());
         ArduinoOTA.handle();
         vTaskDelay(1000);
     }
