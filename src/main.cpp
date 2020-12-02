@@ -17,7 +17,7 @@ const int H3 = 27;
 const int shunt = 32;
 
 // setting PWM properties
-const int freq = 6000;
+const int freq = 24000;
 const int L1_val = 0;
 const int L2_val = 1;
 const int L3_val = 2;
@@ -37,8 +37,8 @@ void setup() {
   Serial.begin(115200);
   Serial.println("Booting");
   Serial.println("Frequency_3Ph_Gen");
-  wifi_set();
-  ota_start();
+  //wifi_set();
+  //ota_start();
 
   //disableCore0WDT();
   //disableCore1WDT();

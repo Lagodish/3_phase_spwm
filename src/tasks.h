@@ -86,7 +86,7 @@ void Servises( void * parameter)
 {
     Serial.println("Servises");
     while(1){
-        ArduinoOTA.handle();
+       // ArduinoOTA.handle();
         vTaskDelay(1000);
     }
 
