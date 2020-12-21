@@ -2,7 +2,7 @@
 
 double k = 0.1;
 double step = 0.001;
-int delay_time = 4;
+int delay_time = 45;
 
 
 void motor(int H1_,int H2_,int H3_, int L1_,int L2_,int L3_){
@@ -53,7 +53,7 @@ void SPWM( void * parameter)
         motor(0,0,SINE_LOOKUP_TABLE[Cycle-80],SINE_LOOKUP_TABLE[Cycle],SINE_LOOKUP_TABLE[Cycle-160],0); //H1 H2 H3 L1 L2 L3
         }
         
-        delayMicroseconds(45);//45 mc - 50 Hz
+        delayMicroseconds(delay_time);//45 mc - 50 Hz
 
         
         if(Cycle==480){ //Функция разгона
@@ -83,11 +83,17 @@ void SPWM( void * parameter)
 }
 
 void Servises( void * parameter)
-{
+{   
+    int new_delay_time = 0;
     Serial.println("Servises");
     while(1){
-       // ArduinoOTA.handle();
-        vTaskDelay(1000);
+
+        while (Serial.available() == 0);
+        new_delay_time = Serial.parseInt();
+        if((new_delay_time>1)&&(new_delay_time<100)){
+            delay_time = new_delay_time;
+        }
+        vTaskDelay(100);
     }
 
     Serial.println("Ending Servises");
