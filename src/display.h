@@ -16,6 +16,8 @@ int new_f = 50;
 int delay_time = 44;
 double k_Freq = 1;
 int BRT_Disp = 30;
+int blink = 0;
+
 //Encoder
 #define encA 36 
 #define encB 39
@@ -68,3 +70,30 @@ MENU_OUTPUTS(out,MAX_DEPTH
 );
 
 NAVROOT(nav,mainMenu,MAX_DEPTH,in,out);
+const char Storm_SYMBOL[] = { 0xAA, '\0' };
+//when menu is suspended
+result MainScreen(menuOut& o,idleEvent e) {
+  o.clear();
+   switch(e) {
+    case idleStart:{break;}
+    case idling:{
+    u8g2.setFont(u8g2_font_fub20_tf);
+    o.setCursor(0,1);
+    o.print(new_f); 
+    o.setCursor(5,1);
+    o.print("Hz");   
+
+    o.setCursor(0,3);
+    o.print(int(k_Freq*220)); 
+    o.setCursor(7,3);
+    o.print("V");   
+    if(blink<20){
+    u8g2.setFont(u8g2_font_open_iconic_all_4x_t);
+    u8g2.drawUTF8( (16 * 6), (48 * 1), "\u00AA"); //x y top left
+    }
+    break;}
+    case idleEnd:{u8g2.setFont(fontName);break;}
+  }
+
+  return proceed;
+}

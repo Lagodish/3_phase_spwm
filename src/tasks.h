@@ -89,10 +89,15 @@ void Servises( void * parameter)
     u8g2.begin();
     u8g2.enableUTF8Print();	
     u8g2.setFont(fontName);
+    
+    nav.idleTask=MainScreen;
+    nav.idleOn(MainScreen);
 
     while(1){
-        
+    blink++;
+    if(blink>40){blink=0;}
     nav.doInput();
+    nav.poll();
     u8g2.setContrast(map(BRT_Disp, 0, 100, 0, 190));
     
     u8g2.firstPage();
