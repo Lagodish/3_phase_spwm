@@ -2,6 +2,8 @@
 #include <Preferences.h> //TODO 
 double k = 0.1;
 double step = 0.001;
+int encoredVal = 0;
+int encoredVal_old = 0;
 
 void motor(int H1_,int H2_,int H3_, int L1_,int L2_,int L3_){
     H1_=H1_*k*k_Freq; 
@@ -89,15 +91,41 @@ void Servises( void * parameter)
     u8g2.begin();
     u8g2.enableUTF8Print();	
     u8g2.setFont(fontName);
-    
+
+    pinMode(encBtn, INPUT);
+
+    ESP32Encoder::useInternalWeakPullResistors=UP;
+    encoder.attachHalfQuad(encA, encB);
+    encoder.clearCount();
+        
+    //nav.timeOut = 1;
     nav.idleTask=MainScreen;
     nav.idleOn(MainScreen);
 
     while(1){
     blink++;
     if(blink>40){blink=0;}
+    V_Print = int(k_Freq*220*k);
+
+    encoredVal = encoder.getCount();
+    if(encoredVal > encoredVal_old){
+        nav.doNav(upCmd);
+    }
+    if(encoredVal < encoredVal_old){
+        nav.doNav(downCmd);
+    }
+    encoredVal_old = encoredVal;    
+
+    if(digitalRead(encBtn)){
+        nav.doNav(enterCmd);
+    }
+
+    if(abs(encoredVal)>200000000){
+        encoredVal = 0; encoredVal_old = 0;
+    }
+
     nav.doInput();
-    nav.poll();
+    //nav.poll();
     u8g2.setContrast(map(BRT_Disp, 0, 100, 0, 190));
     
     u8g2.firstPage();

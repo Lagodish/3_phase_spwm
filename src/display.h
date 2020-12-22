@@ -1,13 +1,13 @@
 #include <Arduino.h>
 #include <Wire.h>
 #include <menu.h>
-//#include <ClickEncoder.h>
-//#include <menuIO/clickEncoderIn.h>
-#include <menuIO/keyIn.h>
 #include <menuIO/u8g2Out.h>
 #include <menuIO/chainStream.h>
 //#include <menuIO/serialOut.h>
 #include <menuIO/serialIn.h>
+#include <ESP32Encoder.h>
+
+ESP32Encoder encoder;
 
 serialIn serial(Serial);
 MENU_INPUTS(in,&serial);
@@ -17,6 +17,7 @@ int delay_time = 44;
 double k_Freq = 1;
 int BRT_Disp = 30;
 int blink = 0;
+int V_Print = 0;
 
 //Encoder
 #define encA 36 
@@ -84,8 +85,9 @@ result MainScreen(menuOut& o,idleEvent e) {
     o.print("Hz");   
 
     o.setCursor(0,3);
-    o.print(int(k_Freq*220)); 
-    o.setCursor(7,3);
+    o.print(V_Print);
+    if(V_Print>99){o.setCursor(7,3);} 
+    else{o.setCursor(5,3);}
     o.print("V");   
     if(blink<20){
     u8g2.setFont(u8g2_font_open_iconic_all_4x_t);
