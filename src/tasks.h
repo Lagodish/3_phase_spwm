@@ -1,17 +1,15 @@
 #include <Arduino.h>
-
+#include <Preferences.h> //TODO 
 double k = 0.1;
 double step = 0.001;
-int delay_time = 45;
-
 
 void motor(int H1_,int H2_,int H3_, int L1_,int L2_,int L3_){
-    H1_=H1_*k; 
-    H2_=H2_*k;
-    H3_=H3_*k;
-    L1_=L1_*k;
-    L2_=L2_*k;
-    L3_=L3_*k; 
+    H1_=H1_*k*k_Freq; 
+    H2_=H2_*k*k_Freq;
+    H3_=H3_*k*k_Freq;
+    L1_=L1_*k*k_Freq;
+    L2_=L2_*k*k_Freq;
+    L3_=L3_*k*k_Freq; 
     ledcWrite(L1_val, L1_); //L1
     ledcWrite(L2_val, L2_); //L2
     ledcWrite(L3_val, L3_); //L3
@@ -54,16 +52,16 @@ void SPWM( void * parameter)
         }
         
         delayMicroseconds(delay_time);//45 mc - 50 Hz
-
-        
+            
         if(Cycle==480){ //Функция разгона
         k=k+step;  
         if(k>1){k=1.0;step=0.0;}
         if(k<0){k=0.0;step=0.0;}
-        //delay_time = map(k*100, 0.0, 100.0, 90, 3);
         }
         
-    }}
+    }
+    
+    }
     else{
         ledcWrite(L1_val, 0);
         ledcWrite(L2_val, 0);
@@ -84,16 +82,23 @@ void SPWM( void * parameter)
 
 void Servises( void * parameter)
 {   
-    int new_delay_time = 0;
+    
     Serial.println("Servises");
-    while(1){
 
-        while (Serial.available() == 0);
-        new_delay_time = Serial.parseInt();
-        if((new_delay_time>1)&&(new_delay_time<100)){
-            delay_time = new_delay_time;
-        }
-        vTaskDelay(100);
+    Wire.begin();
+    u8g2.begin();
+    u8g2.enableUTF8Print();	
+    u8g2.setFont(fontName);
+
+    while(1){
+        
+    nav.doInput();
+    u8g2.setContrast(map(BRT_Disp, 0, 100, 0, 190));
+    
+    u8g2.firstPage();
+    do nav.doOutput(); while(u8g2.nextPage());
+    vTaskDelay(50/portTICK_PERIOD_MS);  
+
     }
 
     Serial.println("Ending Servises");

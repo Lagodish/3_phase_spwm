@@ -28,13 +28,14 @@ const int resolution = 10;
 
 bool emergency = false;
 
+#include <display.h>
 #include <addons.h>
 #include <tasks.h>
 
 
 void setup() {
   // put your setup code here, to run once:
-  Serial.begin(115200);
+  Serial.begin(9600);
   Serial.println("Booting");
   Serial.println("Frequency_3Ph_Gen");
   //wifi_set();
