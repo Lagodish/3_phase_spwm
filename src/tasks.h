@@ -152,7 +152,7 @@ void data(){
     if(delay_time<0){delay_time=0;}
     if(new_f>50){cache_f=50;}
     else{cache_f=new_f;}
-    k_Freq = (float(map(cache_f, 10, 50, 2, 10))/10);
+    k_Freq = (double(map(cache_f, 10, 50, 20, 100))/100);
 
     preferences.end();
 }
