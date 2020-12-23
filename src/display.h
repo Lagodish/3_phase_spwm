@@ -12,19 +12,6 @@ ESP32Encoder encoder;
 serialIn serial(Serial);
 MENU_INPUTS(in,&serial);
 
-int new_f = 50;
-int delay_time = 44;
-double k_Freq = 1;
-int BRT_Disp = 30;
-int blink = 0;
-int V_Print = 0;
-
-//Encoder
-#define encA 36 
-#define encB 39
-//Encoder button
-#define encBtn 34
-
 using namespace Menu;
 #define MAX_DEPTH 2
 
@@ -48,20 +35,49 @@ const colorDef<uint8_t> colors[6] MEMMODE={
   {{0,1},{0,0,1}},//cursorColor
   {{1,1},{1,0,0}},//titleColor
 };
-int cache_f=0;
+
 result action1(eventMask e,navNode& nav, prompt &item) {
     delay_time = -37.2311 + 4098.9954 / new_f;
     if(delay_time<0){delay_time=0;}
     if(new_f>50){cache_f=50;}
     else{cache_f=new_f;}
-    k_Freq = (double(map(cache_f, 10, 50, 2, 10))/10);
+    k_Freq = (float(map(cache_f, 10, 50, 2, 10))/10);
+
+    if((new_f>9)&&(new_f<71)){
+    preferences.begin("FrequencyData", false);
+    preferences.putUInt("Frequency", new_f);
+    preferences.end();
+    }
+
+    return proceed;
+}
+
+result action2(eventMask e,navNode& nav, prompt &item) {
+
+    if((BRT_Disp>=0)&&(BRT_Disp<=100)){
+    preferences.begin("FrequencyData", false);
+    preferences.putUInt("Bright", BRT_Disp);
+    preferences.end();
+    }
+
+    return proceed;
+}
+
+result action3(eventMask e,navNode& nav, prompt &item) {
+
+    if((k_menu>=1)&&(k_menu<=10)){
+    preferences.begin("FrequencyData", false);
+    preferences.putUInt("StartTime", k_menu);
+    preferences.end();
+    }
 
     return proceed;
 }
 
 MENU(mainMenu, "Menu" ,doNothing,noEvent,noStyle
   ,FIELD(new_f,"Freq"," Hz",10,70,1,0,action1,enterEvent,noStyle)
-  ,FIELD(BRT_Disp,"Bright"," %",0,100,10,0,doNothing,noEvent,noStyle)
+  ,FIELD(k_menu,"StartTime","X",1,10,1,0,action3,enterEvent,noStyle)
+  ,FIELD(BRT_Disp,"Bright"," %",0,100,10,0,action2,enterEvent,noStyle)
   ,EXIT("Back")
 );
 

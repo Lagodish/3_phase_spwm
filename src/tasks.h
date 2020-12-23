@@ -1,9 +1,6 @@
 #include <Arduino.h>
-#include <Preferences.h> //TODO 
-double k = 0.1;
-double step = 0.001;
-int encoredVal = 0;
-int encoredVal_old = 0;
+
+void data();
 
 void motor(int H1_,int H2_,int H3_, int L1_,int L2_,int L3_){
     H1_=H1_*k*k_Freq; 
@@ -54,15 +51,11 @@ void SPWM( void * parameter)
         }
         
         delayMicroseconds(delay_time);//45 mc - 50 Hz
-            
-        if(Cycle==480){ //Функция разгона
+                    
+    }
         k=k+step;  
         if(k>1){k=1.0;step=0.0;}
-        if(k<0){k=0.0;step=0.0;}
-        }
-        
-    }
-    
+        if(k<0){k=0.0;step=0.0;}   
     }
     else{
         ledcWrite(L1_val, 0);
@@ -86,7 +79,7 @@ void Servises( void * parameter)
 {   
     
     Serial.println("Servises");
-
+    data();
     Wire.begin();
     u8g2.begin();
     u8g2.enableUTF8Print();	
@@ -136,4 +129,30 @@ void Servises( void * parameter)
 
     Serial.println("Ending Servises");
     vTaskDelete(Task2);
+}
+
+void data(){
+    preferences.begin("FrequencyData", false);
+    if(preferences.getUInt("FirstStart", 0)!=3){
+        preferences.putUInt("FirstStart", 3);
+        preferences.putUInt("Frequency", 50);
+        preferences.putUInt("Bright", 30);
+        preferences.putUInt("StartTime", 1);
+    }
+    new_f = preferences.getUInt("Frequency", 0);
+    BRT_Disp = preferences.getUInt("Bright", 0);
+    k_menu = preferences.getUInt("StartTime", 0);
+
+    if((new_f<10)||(new_f>70)){new_f=50;}
+    if((BRT_Disp<0)||(BRT_Disp>100)){BRT_Disp=30;}
+    if((k_menu<1)||(k_menu>10)){k_menu=1;}
+
+    step = step*k_menu;
+    delay_time = -37.2311 + 4098.9954 / new_f;
+    if(delay_time<0){delay_time=0;}
+    if(new_f>50){cache_f=50;}
+    else{cache_f=new_f;}
+    k_Freq = (float(map(cache_f, 10, 50, 2, 10))/10);
+
+    preferences.end();
 }

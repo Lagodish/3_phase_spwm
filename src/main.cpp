@@ -3,30 +3,12 @@
 #include <ESPmDNS.h>
 #include <WiFiUdp.h>
 #include <ArduinoOTA.h>
+#include <Preferences.h> 
+#include <var.h>
 
+Preferences preferences;
 TaskHandle_t Task1;
 TaskHandle_t Task2;
-
-const int L1 = 33;  
-const int L2 = 26;
-const int L3 = 17; 
-const int H1 = 16;  
-const int H2 = 25;
-const int H3 = 27;   
-
-const int shunt = 32;
-
-// setting PWM properties
-const int freq = 24000;
-const int L1_val = 0;
-const int L2_val = 1;
-const int L3_val = 2;
-const int H1_val = 3;
-const int H2_val = 4;
-const int H3_val = 5;
-const int resolution = 10;
-
-bool emergency = false;
 
 #include <display.h>
 #include <addons.h>
