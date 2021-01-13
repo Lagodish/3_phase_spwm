@@ -1,18 +1,22 @@
 #include <Arduino.h>
 #include <WiFi.h>
-#include <ESPmDNS.h>
-#include <WiFiUdp.h>
-#include <ArduinoOTA.h>
+#include <WebServer.h>
+#include <AutoConnect.h>
 #include <Preferences.h> 
 #include <var.h>
 
 Preferences preferences;
 TaskHandle_t Task1;
 TaskHandle_t Task2;
+TaskHandle_t TaskWiFi;
+WebServer Server;
+AutoConnect Portal(Server);
+AutoConnectConfig Config;    
 
 #include <display.h>
 #include <addons.h>
 #include <tasks.h>
+
 
 
 void setup() {
@@ -22,8 +26,8 @@ void setup() {
   Serial.println("Frequency_3Ph_Gen");
   //wifi_set();
   //ota_start();
-
-  //disableCore0WDT();
+  
+  disableCore0WDT();
   //disableCore1WDT();
 
   // configure LED PWM functionalitites
@@ -52,20 +56,32 @@ void setup() {
   xTaskCreatePinnedToCore(
     Servises,         /* Task function. */
     "Servises",       /* String with name of task. */
-    8000,             /* Stack size in bytes. */
+    10000,             /* Stack size in bytes. */
     NULL,             /* Parameter passed as input of the task */
     1,                /* Priority of the task. */
     &Task2,           /* Task handle. */
     0);               /* Core 1 */
 
   xTaskCreatePinnedToCore(
-    SPWM,             /* Task function. */
-    "SPWM",           /* String with name of task. */
-    8000,            /* Stack size in bytes. */
-    NULL,             /* Parameter passed as input of the task */
-    1,                /* Priority of the task. */
-    &Task1,           /* Task handle. */
-    1);               /* Core 1 */ 
+    WiFiService,       
+    "WiFiService",        
+    8000,          
+    NULL,             
+    1,             
+    &TaskWiFi,           
+    1);
+
+  vTaskDelay(2000 / portTICK_PERIOD_MS);
+  vTaskDelete(TaskWiFi);
+
+  xTaskCreatePinnedToCore(
+    SPWM,       
+    "SPWM",        
+    8000,          
+    NULL,             
+    1,             
+    &Task1,           
+    1);               
 
 
 }

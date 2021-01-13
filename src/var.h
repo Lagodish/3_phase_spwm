@@ -18,13 +18,13 @@ const int H2_val = 4;
 const int H3_val = 5;
 const int resolution = 10;
 
-bool emergency = false;
+bool emergency = true;
 
 double k = 0.2;
 int k_menu = 1;
 int encoredVal = 0;
 int encoredVal_old = 0;
-
+bool Wifi_connected = false;
 double step = 0.001;
 int new_f = 50;
 int delay_time = 44;

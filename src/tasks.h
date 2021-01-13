@@ -1,6 +1,10 @@
 #include <Arduino.h>
+#include "GyverButton.h"
+
+GButton butt1(encBtn); // кнопка подключена сюда (BTN_PIN --- КНОПКА --- GND)
 
 void data();
+void onConnect(IPAddress& ipaddr);
 
 void motor(int H1_,int H2_,int H3_, int L1_,int L2_,int L3_){
     H1_=H1_*k*k_Freq; 
@@ -21,9 +25,9 @@ void SPWM( void * parameter)
 {
     Serial.println("SPWM");
     int Cycle = 0;
-    while(1){
-    if(!emergency){
 
+    while(1){    
+    if(!emergency){
     for(Cycle = 0; Cycle <= 480; Cycle=Cycle+2){   
 
         if((Cycle>0)&&(Cycle<=80)){    //___1
@@ -65,27 +69,36 @@ void SPWM( void * parameter)
         ledcWrite(H2_val, 0);
         ledcWrite(H3_val, 0);
         Serial.println("Emergency stop!");
-        k=0.0;
-        step = 0.0;
+        k=0.2;
+        //step = 0.0;
         vTaskDelay(1000);
-    }
+    } 
     }
 
     Serial.println("Ending SPWM");
     vTaskDelete(Task1);
 }
 
+void isr() {
+    butt1.tick();  // опрашиваем в прерывании, чтобы поймать нажатие в любом случае 
+}
+bool onece = true;
 void Servises( void * parameter)
 {   
     
     Serial.println("Servises");
+    //Wifi_connected = true;
     data();
     Wire.begin();
     u8g2.begin();
     u8g2.enableUTF8Print();	
     u8g2.setFont(fontName);
 
-    pinMode(encBtn, INPUT);
+    attachInterrupt(1, isr, CHANGE);
+
+    butt1.setDebounce(80);      // настройка антидребезга (по умолчанию 80 мс)
+    butt1.setTimeout(300);      // настройка таймаута на удержание (по умолчанию 500 мс)
+    butt1.setType(HIGH_PULL);
 
     ESP32Encoder::useInternalWeakPullResistors=UP;
     encoder.attachHalfQuad(encA, encB);
@@ -97,6 +110,10 @@ void Servises( void * parameter)
 
     while(1){
     blink++;
+
+    butt1.tick();
+    Portal.handleClient();
+
     if(blink>40){blink=0;}
     V_Print = int(k_Freq*220*k);
 
@@ -108,18 +125,25 @@ void Servises( void * parameter)
         nav.doNav(downCmd);
     }
     encoredVal_old = encoredVal;    
-
-    if(digitalRead(encBtn)){
-        nav.doNav(enterCmd);
+    
+    if(butt1.isClick()){
+        if(Wifi_connected){
+            nav.doNav(enterCmd);
+        }
+        else{
+           // if(onece){onece=false; vTaskDelete(TaskWiFi);}
+            Wifi_connected = true;
+            emergency = false;
+        }
     }
 
     if(abs(encoredVal)>200000000){
         encoredVal = 0; encoredVal_old = 0;
     }
 
-    nav.doInput();
-    //nav.poll();
-    u8g2.setContrast(map(BRT_Disp, 0, 100, 0, 190));
+    //nav.doInput();
+    nav.poll();
+    u8g2.setContrast(map(BRT_Disp, 0, 100, 10, 190));
     
     u8g2.firstPage();
     do nav.doOutput(); while(u8g2.nextPage());
@@ -129,6 +153,31 @@ void Servises( void * parameter)
 
     Serial.println("Ending Servises");
     vTaskDelete(Task2);
+}
+
+void WiFiService( void * parameter)
+{
+    Serial.println("WiFiService");
+ 
+    Config.autoReconnect = true;
+    Config.title = "Controller Setup";
+    Config.homeUri = "/_ac/config";
+    Config.apid = "Controller_Setup";
+    Config.psk = "";
+    Config.bootUri = AC_ONBOOTURI_HOME;
+    Config.menuItems = AC_MENUITEM_CONFIGNEW | AC_MENUITEM_RESET | AC_MENUITEM_DISCONNECT;
+    Portal.config(Config);
+    Portal.onConnect(onConnect);  // Register the ConnectExit function
+    if (Portal.begin()) {
+    Serial.println("HTTP server:" + WiFi.localIP().toString());
+    }
+
+    while (1)
+    {
+        vTaskDelay(1000);
+    }
+    
+    Serial.println("Ending WiFiService");
 }
 
 void data(){
@@ -155,4 +204,13 @@ void data(){
     k_Freq = (double(map(cache_f, 10, 50, 20, 100))/100);
 
     preferences.end();
+}
+
+void onConnect(IPAddress& ipaddr) {
+  Serial.print("WiFi connected with ");
+  Serial.print(WiFi.SSID());
+  Serial.print(", IP:");
+  Serial.println(ipaddr.toString());
+  Wifi_connected = true;
+  emergency = false;
 }

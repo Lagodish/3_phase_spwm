@@ -94,6 +94,7 @@ result MainScreen(menuOut& o,idleEvent e) {
    switch(e) {
     case idleStart:{break;}
     case idling:{
+    if(Wifi_connected){
     u8g2.setFont(u8g2_font_fub20_tf);
     o.setCursor(0,1);
     o.print(new_f); 
@@ -107,7 +108,16 @@ result MainScreen(menuOut& o,idleEvent e) {
     o.print("V");   
     if(blink<20){
     u8g2.setFont(u8g2_font_open_iconic_all_4x_t);
-    u8g2.drawUTF8( (16 * 6), (48 * 1), "\u00AA"); //x y top left
+    u8g2.drawUTF8( (16 * 6), (48 * 1), "\u00AA");}} //x y top left
+    else{
+    u8g2.setFont(u8g2_font_fub20_tf);
+    o.setCursor(1,1);
+    o.print("No Wi-Fi");   
+    u8g2.setFont(fontName);
+    o.setCursor(0,2);
+    o.print("Press btn to start");  
+    o.setCursor(0,3);
+    o.print("or join ESP WiFi");  
     }
     break;}
     case idleEnd:{u8g2.setFont(fontName);break;}
