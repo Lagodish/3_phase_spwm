@@ -21,9 +21,9 @@ void motor(int H1_,int H2_,int H3_, int L1_,int L2_,int L3_){
     ledcWrite(H3_val, H3_); //H3
 }
 
-void SPWM( void * parameter)
+void SPWM3( void * parameter)
 {
-    Serial.println("SPWM");
+    Serial.println("SPWM3");
     int Cycle = 0;
 
     while(1){    
@@ -70,7 +70,65 @@ void SPWM( void * parameter)
         ledcWrite(H3_val, 0);
         Serial.println("Emergency stop!");
         k=0.2;
-        //step = 0.0;
+        step = 0.001;
+        vTaskDelay(1000);
+    } 
+    }
+
+    Serial.println("Ending SPWM");
+    vTaskDelete(Task1);
+}
+
+void SPWM2( void * parameter)
+{
+    Serial.println("SPWM2");
+    int Cycle = 0;
+
+    while(1){    
+    if(!emergency){
+    for(Cycle = 0; Cycle <= 480; Cycle=Cycle+2){   
+
+        if((Cycle>0)&&(Cycle<=80)){    //___1
+        motor(0,1023,0,SINE_LOOKUP_TABLE[Cycle],0,0); //H1 H2 H3 L1 L2 L3
+        }
+        
+        if((Cycle>80)&&(Cycle<=160)){    //___2 
+        motor(0,1023,0,SINE_LOOKUP_TABLE[Cycle],0,0); //H1 H2 H3 L1 L2 L3
+        }
+        
+        if((Cycle>160)&&(Cycle<=240)){    //___3
+        motor(0,1023,0,SINE_LOOKUP_TABLE[Cycle],0,0); //H1 H2 H3 L1 L2 L3
+        }
+
+        if((Cycle>240)&&(Cycle<=320)){    //___4
+        motor(1023,0,0,0,SINE_LOOKUP_TABLE[Cycle],0); //H1 H2 H3 L1 L2 L3
+        }
+
+        if((Cycle>320)&&(Cycle<=400)){    //___5
+        motor(1023,0,0,0,SINE_LOOKUP_TABLE[Cycle],0);  //H1 H2 H3 L1 L2 L3
+        }
+
+        if((Cycle>400)&&(Cycle<=480)){    //___6
+        motor(1023,0,0,0,SINE_LOOKUP_TABLE[Cycle],0); //H1 H2 H3 L1 L2 L3
+        }
+        
+        delayMicroseconds(delay_time);//45 mc - 50 Hz
+                    
+    }
+        k=k+step;  
+        if(k>1){k=1.0;step=0.0;}
+        if(k<0){k=0.0;step=0.0;}   
+    }
+    else{
+        ledcWrite(L1_val, 0);
+        ledcWrite(L2_val, 0);
+        ledcWrite(L3_val, 0);
+        ledcWrite(H1_val, 0);
+        ledcWrite(H2_val, 0);
+        ledcWrite(H3_val, 0);
+        Serial.println("Emergency stop!");
+        k=0.2;
+        step = 0.001;
         vTaskDelay(1000);
     } 
     }
@@ -82,7 +140,25 @@ void SPWM( void * parameter)
 void isr() {
     butt1.tick();  // опрашиваем в прерывании, чтобы поймать нажатие в любом случае 
 }
-bool onece = true;
+
+BLYNK_WRITE(V0) //ON/OFF
+{
+  emergency = bool(param.asInt()); // assigning incoming value from pin V1 to a variable
+}
+
+BLYNK_WRITE(V1) //HZ
+{
+    new_f = param.asInt(); // assigning incoming value from pin V1 to a variable
+    if((new_f>9)&&(new_f<71)){
+        delay_time = -37.2311 + 4098.9954 / new_f;
+        if(delay_time<0){delay_time=0;}
+        if(new_f>50){cache_f=50;}
+        else{cache_f=new_f;}
+        k_Freq = (double(map(cache_f, 10, 50, 20, 100))/100);
+    }
+}
+
+
 void Servises( void * parameter)
 {   
     
@@ -106,6 +182,7 @@ void Servises( void * parameter)
         
     //nav.timeOut = 1;
     nav.idleTask=MainScreen;
+     vTaskDelay(1500 / portTICK_PERIOD_MS);
     nav.idleOn(MainScreen);
 
     while(1){
@@ -113,6 +190,7 @@ void Servises( void * parameter)
 
     butt1.tick();
     Portal.handleClient();
+    if(BlynkMode&&Connected2Blynk){Blynk.run();}
 
     if(blink>40){blink=0;}
     V_Print = int(k_Freq*220*k);
@@ -131,7 +209,6 @@ void Servises( void * parameter)
             nav.doNav(enterCmd);
         }
         else{
-           // if(onece){onece=false; vTaskDelete(TaskWiFi);}
             Wifi_connected = true;
             emergency = false;
         }
@@ -187,11 +264,18 @@ void data(){
         preferences.putUInt("Frequency", 50);
         preferences.putUInt("Bright", 30);
         preferences.putUInt("StartTime", 1);
+        preferences.putBool("WiFiCtrl", true);
+        preferences.putBool("PhaseMode", true);
+        preferences.putBool("BlynkMode", false);
     }
     new_f = preferences.getUInt("Frequency", 0);
     BRT_Disp = preferences.getUInt("Bright", 0);
     k_menu = preferences.getUInt("StartTime", 0);
-
+    WiFiCtrl = preferences.getBool("WiFiCtrl", true);
+    PhaseMode = preferences.getBool("PhaseMode", true);
+    BlynkMode = preferences.getBool("BlynkMode", false);
+    
+    if(!WiFiCtrl){Wifi_connected = true;emergency = false;}
     if((new_f<10)||(new_f>70)){new_f=50;}
     if((BRT_Disp<0)||(BRT_Disp>100)){BRT_Disp=30;}
     if((k_menu<1)||(k_menu>10)){k_menu=1;}
@@ -213,4 +297,9 @@ void onConnect(IPAddress& ipaddr) {
   Serial.println(ipaddr.toString());
   Wifi_connected = true;
   emergency = false;
+    if(BlynkMode){
+        Blynk.config(auth);  // in place of Blynk.begin(auth, ssid, pass);
+        while (Blynk.connect() == false) { }
+        Connected2Blynk = Blynk.connected();
+    }
 }

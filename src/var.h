@@ -19,6 +19,10 @@ const int H3_val = 5;
 const int resolution = 10;
 
 bool emergency = true;
+bool WiFiCtrl = false;
+bool PhaseMode = false;
+bool BlynkMode = false;
+bool Connected2Blynk = false;
 
 double k = 0.2;
 int k_menu = 1;
@@ -40,3 +44,4 @@ int cache_f=0;
 //Encoder button
 #define encBtn 34
 
+char auth[] = "DdoWcquVgiiZqcCwQwAQqkzo9cYw9Cee";

@@ -1,3 +1,4 @@
+/*
 const char* ssid = "WiFi-DOM.ru-6111";  //Название сети! WiFi-DOM.ru-6111 Psin(a)
 const char* password = "611rdddRDD"; //Пароль! 611rdddRDD Hey!28R0om!
 
@@ -15,7 +16,7 @@ void wifi_set(){
     Serial.print("IP address: ");
     Serial.println(WiFi.localIP());
 }
-/*
+
 void ota_start(){
       // Port defaults to 3232
   // ArduinoOTA.setPort(3232);

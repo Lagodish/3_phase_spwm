@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <WiFi.h>
 #include <WebServer.h>
+#include <BlynkSimpleEsp32.h>
 #include <AutoConnect.h>
 #include <Preferences.h> 
 #include <var.h>
@@ -74,14 +75,24 @@ void setup() {
   vTaskDelay(2000 / portTICK_PERIOD_MS);
   vTaskDelete(TaskWiFi);
 
+  if(PhaseMode){
   xTaskCreatePinnedToCore(
-    SPWM,       
-    "SPWM",        
+    SPWM3,       
+    "SPWM3",        
     8000,          
     NULL,             
     1,             
     &Task1,           
-    1);               
+    1); }
+    else{
+  xTaskCreatePinnedToCore(
+    SPWM2,       
+    "SPWM2",        
+    8000,          
+    NULL,             
+    1,             
+    &Task1,           
+    1);}              
 
 
 }

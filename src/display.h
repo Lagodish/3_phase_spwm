@@ -37,13 +37,14 @@ const colorDef<uint8_t> colors[6] MEMMODE={
 };
 
 result action1(eventMask e,navNode& nav, prompt &item) {
+    if((new_f>9)&&(new_f<71)){
     delay_time = -37.2311 + 4098.9954 / new_f;
     if(delay_time<0){delay_time=0;}
     if(new_f>50){cache_f=50;}
     else{cache_f=new_f;}
     k_Freq = (double(map(cache_f, 10, 50, 20, 100))/100);
 
-    if((new_f>9)&&(new_f<71)){
+    
     preferences.begin("FrequencyData", false);
     preferences.putUInt("Frequency", new_f);
     preferences.end();
@@ -64,19 +65,63 @@ result action2(eventMask e,navNode& nav, prompt &item) {
 }
 
 result action3(eventMask e,navNode& nav, prompt &item) {
-
     if((k_menu>=1)&&(k_menu<=10)){
     preferences.begin("FrequencyData", false);
     preferences.putUInt("StartTime", k_menu);
     preferences.end();
     }
-
     return proceed;
 }
+
+result action4(eventMask e,navNode& nav, prompt &item) {
+    if((WiFiCtrl==false)||(WiFiCtrl==true)){
+    preferences.begin("FrequencyData", false);
+    preferences.putBool("WiFiCtrl", WiFiCtrl);
+    preferences.end();
+    }
+    return proceed;
+}
+
+result action5(eventMask e,navNode& nav, prompt &item) {
+    if((PhaseMode==false)||(PhaseMode==true)){
+    preferences.begin("FrequencyData", false);
+    preferences.putBool("PhaseMode", PhaseMode);
+    preferences.end();
+    }
+    return proceed;
+}
+
+result action6(eventMask e,navNode& nav, prompt &item) {
+    if((BlynkMode==false)||(BlynkMode==true)){
+    preferences.begin("FrequencyData", false);
+    preferences.putBool("BlynkMode", BlynkMode);
+    preferences.end();
+    }
+    return proceed;
+}
+
+TOGGLE(WiFiCtrl,setWiFi,"WiFi: ",action4,enterEvent,noStyle//,doExit,enterEvent,noStyle
+  ,VALUE("On",HIGH,doNothing,noEvent)
+  ,VALUE("Off",LOW,doNothing,noEvent)
+);
+
+TOGGLE(PhaseMode,setPhase,"Phase: ",action5,enterEvent,noStyle//,doExit,enterEvent,noStyle
+  ,VALUE("3",HIGH,doNothing,noEvent)
+  ,VALUE("2",LOW,doNothing,noEvent)
+);
+
+TOGGLE(BlynkMode,setBlynk,"Blynk: ",action6,enterEvent,noStyle//,doExit,enterEvent,noStyle
+  ,VALUE("On",HIGH,doNothing,noEvent)
+  ,VALUE("Off",LOW,doNothing,noEvent)
+);
+
 
 MENU(mainMenu, "Menu" ,doNothing,noEvent,noStyle
   ,FIELD(new_f,"Freq"," Hz",10,70,1,0,action1,enterEvent,noStyle)
   ,FIELD(k_menu,"StartTime","X",1,10,1,0,action3,enterEvent,noStyle)
+  ,SUBMENU(setPhase)
+  ,SUBMENU(setWiFi)
+  ,SUBMENU(setBlynk)
   ,FIELD(BRT_Disp,"Bright"," %",0,100,10,0,action2,enterEvent,noStyle)
   ,EXIT("Back")
 );
@@ -108,7 +153,9 @@ result MainScreen(menuOut& o,idleEvent e) {
     o.print("V");   
     if(blink<20){
     u8g2.setFont(u8g2_font_open_iconic_all_4x_t);
-    u8g2.drawUTF8( (16 * 6), (48 * 1), "\u00AA");}} //x y top left
+    u8g2.drawUTF8( (16 * 6), 43, "\u00AA");} //x y top left
+    u8g2.setFont(u8g2_font_open_iconic_all_2x_t);
+    if(WiFi.status() == WL_CONNECTED){u8g2.drawUTF8( 104, 64, "\u00F7");}} //x y top left
     else{
     u8g2.setFont(u8g2_font_fub20_tf);
     o.setCursor(1,1);
