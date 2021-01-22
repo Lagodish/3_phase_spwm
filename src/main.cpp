@@ -46,6 +46,12 @@ void setup() {
   ledcWrite(H2_val, 0);
   ledcWrite(H3_val, 0);
 
+  for(int i = 0; i < SINE_TABLE_SIZE; i++){
+  SINE_TABLE[0][i]=SINE_LOOKUP_TABLE[i];}
+
+  for(int i = 0; i < SINE_TABLE_SIZE; i++){
+  SINE_TABLE[1][i]=SINE_LOOKUP_TABLE_2[i];}
+
   xTaskCreatePinnedToCore(
     Servises,         /* Task function. */
     "Servises",       /* String with name of task. */

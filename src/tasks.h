@@ -45,27 +45,27 @@ void SPWM3( void * parameter)
     for(Cycle = 0; Cycle <= 480; Cycle=Cycle+2){   
 
         if((Cycle>0)&&(Cycle<=80)){    //___1
-        motor(SINE_LOOKUP_TABLE[Cycle],0,SINE_LOOKUP_TABLE[Cycle+160], 0, SINE_LOOKUP_TABLE[Cycle+80], 0); //H1 H2 H3 L1 L2 L3
+        motor(SINE_TABLE[SinMode][Cycle],0,SINE_TABLE[SinMode][Cycle+160], 0, SINE_TABLE[SinMode][Cycle+80], 0); //H1 H2 H3 L1 L2 L3
         }
         
         if((Cycle>80)&&(Cycle<=160)){    //___2 
-        motor(SINE_LOOKUP_TABLE[Cycle],0,0,0,SINE_LOOKUP_TABLE[Cycle+80],SINE_LOOKUP_TABLE[Cycle+160]); //H1 H2 H3 L1 L2 L3
+        motor(SINE_TABLE[SinMode][Cycle],0,0,0,SINE_TABLE[SinMode][Cycle+80],SINE_TABLE[SinMode][Cycle+160]); //H1 H2 H3 L1 L2 L3
         }
         
         if((Cycle>160)&&(Cycle<=240)){    //___3
-        motor(SINE_LOOKUP_TABLE[Cycle],SINE_LOOKUP_TABLE[Cycle+80],0,0,0,SINE_LOOKUP_TABLE[Cycle+160]); //H1 H2 H3 L1 L2 L3
+        motor(SINE_TABLE[SinMode][Cycle],SINE_TABLE[SinMode][Cycle+80],0,0,0,SINE_TABLE[SinMode][Cycle+160]); //H1 H2 H3 L1 L2 L3
         }
 
         if((Cycle>240)&&(Cycle<=320)){    //___4
-        motor(0,SINE_LOOKUP_TABLE[Cycle+80],0,SINE_LOOKUP_TABLE[Cycle],0,SINE_LOOKUP_TABLE[Cycle-80]); //H1 H2 H3 L1 L2 L3
+        motor(0,SINE_TABLE[SinMode][Cycle+80],0,SINE_TABLE[SinMode][Cycle],0,SINE_TABLE[SinMode][Cycle-80]); //H1 H2 H3 L1 L2 L3
         }
 
         if((Cycle>320)&&(Cycle<=400)){    //___5
-        motor(0,SINE_LOOKUP_TABLE[Cycle-160],SINE_LOOKUP_TABLE[Cycle-80],SINE_LOOKUP_TABLE[Cycle],0,0);  //H1 H2 H3 L1 L2 L3
+        motor(0,SINE_TABLE[SinMode][Cycle-160],SINE_TABLE[SinMode][Cycle-80],SINE_TABLE[SinMode][Cycle],0,0);  //H1 H2 H3 L1 L2 L3
         }
 
         if((Cycle>400)&&(Cycle<=480)){    //___6
-        motor(0,0,SINE_LOOKUP_TABLE[Cycle-80],SINE_LOOKUP_TABLE[Cycle],SINE_LOOKUP_TABLE[Cycle-160],0); //H1 H2 H3 L1 L2 L3
+        motor(0,0,SINE_TABLE[SinMode][Cycle-80],SINE_TABLE[SinMode][Cycle],SINE_TABLE[SinMode][Cycle-160],0); //H1 H2 H3 L1 L2 L3
         }
         
         delayMicroseconds(delay_time);//45 mc - 50 Hz
@@ -100,27 +100,27 @@ void SPWM2( void * parameter)
     for(Cycle = 0; Cycle <= 480; Cycle=Cycle+2){   
 
         if((Cycle>0)&&(Cycle<=80)){    //___1
-        motor2(0,1023,0,SINE_LOOKUP_TABLE[Cycle],0,0); //H1 H2 H3 L1 L2 L3
+        motor2(0,1023,0,SINE_TABLE[SinMode][Cycle],0,0); //H1 H2 H3 L1 L2 L3
         }
         
         if((Cycle>80)&&(Cycle<=160)){    //___2 
-        motor2(0,1023,0,SINE_LOOKUP_TABLE[Cycle],0,0); //H1 H2 H3 L1 L2 L3
+        motor2(0,1023,0,SINE_TABLE[SinMode][Cycle],0,0); //H1 H2 H3 L1 L2 L3
         }
         
         if((Cycle>160)&&(Cycle<=240)){    //___3
-        motor2(0,1023,0,SINE_LOOKUP_TABLE[Cycle],0,0); //H1 H2 H3 L1 L2 L3
+        motor2(0,1023,0,SINE_TABLE[SinMode][Cycle],0,0); //H1 H2 H3 L1 L2 L3
         }
 
         if((Cycle>240)&&(Cycle<=320)){    //___4
-        motor2(1023,0,0,0,SINE_LOOKUP_TABLE[Cycle],0); //H1 H2 H3 L1 L2 L3
+        motor2(1023,0,0,0,SINE_TABLE[SinMode][Cycle],0); //H1 H2 H3 L1 L2 L3
         }
 
         if((Cycle>320)&&(Cycle<=400)){    //___5
-        motor2(1023,0,0,0,SINE_LOOKUP_TABLE[Cycle],0);  //H1 H2 H3 L1 L2 L3
+        motor2(1023,0,0,0,SINE_TABLE[SinMode][Cycle],0);  //H1 H2 H3 L1 L2 L3
         }
 
         if((Cycle>400)&&(Cycle<=480)){    //___6
-        motor2(1023,0,0,0,SINE_LOOKUP_TABLE[Cycle],0); //H1 H2 H3 L1 L2 L3
+        motor2(1023,0,0,0,SINE_TABLE[SinMode][Cycle],0); //H1 H2 H3 L1 L2 L3
         }
         
         delayMicroseconds(delay_time);//45 mc - 50 Hz
@@ -315,6 +315,7 @@ void data(){
         preferences.putBool("WiFiCtrl", true);
         preferences.putBool("PhaseMode", true);
         preferences.putBool("BlynkMode", false);
+        preferences.putBool("SinMode", true);
     }
     Power_set = preferences.getUInt("Power", 100);
     BRT_Disp = preferences.getUInt("Bright", 50);
@@ -322,6 +323,7 @@ void data(){
     WiFiCtrl = preferences.getBool("WiFiCtrl", true);
     PhaseMode = preferences.getBool("PhaseMode", true);
     BlynkMode = preferences.getBool("BlynkMode", false);
+    SinMode = preferences.getBool("SinMode", true);
     preferences.end();
 
     if(!WiFiCtrl){Wifi_connected = true;emergency = false;}

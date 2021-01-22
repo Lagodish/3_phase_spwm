@@ -21,6 +21,7 @@ const int resolution = 10;
 bool oneUse = false;
 bool emergency = true;
 bool WiFiCtrl = false;
+bool SinMode = false;
 bool PhaseMode = false;
 bool BlynkMode = false;
 bool Connected2Blynk = false;

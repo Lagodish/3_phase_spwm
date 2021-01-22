@@ -94,6 +94,15 @@ result action6(eventMask e,navNode& nav, prompt &item) {
     return proceed;
 }
 
+result action7(eventMask e,navNode& nav, prompt &item) {
+    if((SinMode==false)||(SinMode==true)){
+    preferences.begin("FrequencyData", false);
+    preferences.putBool("SinMode", SinMode);
+    preferences.end();
+    }
+    return proceed;
+}
+
 TOGGLE(WiFiCtrl,setWiFi,"WiFi: ",action4,enterEvent,noStyle//,doExit,enterEvent,noStyle
   ,VALUE("On",HIGH,doNothing,noEvent)
   ,VALUE("Off",LOW,doNothing,noEvent)
@@ -101,7 +110,7 @@ TOGGLE(WiFiCtrl,setWiFi,"WiFi: ",action4,enterEvent,noStyle//,doExit,enterEvent,
 
 TOGGLE(PhaseMode,setPhase,"Phase: ",action5,enterEvent,noStyle//,doExit,enterEvent,noStyle
   ,VALUE("3",HIGH,doNothing,noEvent)
-  ,VALUE("2",LOW,doNothing,noEvent)
+  ,VALUE("1",LOW,doNothing,noEvent)
 );
 
 TOGGLE(BlynkMode,setBlynk,"Blynk: ",action6,enterEvent,noStyle//,doExit,enterEvent,noStyle
@@ -109,11 +118,17 @@ TOGGLE(BlynkMode,setBlynk,"Blynk: ",action6,enterEvent,noStyle//,doExit,enterEve
   ,VALUE("Off",LOW,doNothing,noEvent)
 );
 
+TOGGLE(SinMode,setSin,"Sin Mode: ",action7,enterEvent,noStyle//,doExit,enterEvent,noStyle
+  ,VALUE("SPWM",HIGH,doNothing,noEvent)
+  ,VALUE("THIPWM",LOW,doNothing,noEvent)
+);
+
 
 MENU(mainMenu, "Menu" ,doNothing,noEvent,noStyle
   ,FIELD(Power_set,"Power"," %",30,130,1,0,action1,enterEvent,noStyle)
   ,FIELD(k_menu,"StartTime","X",1,10,1,0,action3,enterEvent,noStyle)
   ,SUBMENU(setPhase)
+  ,SUBMENU(setSin)
   ,SUBMENU(setWiFi)
   ,SUBMENU(setBlynk)
   ,FIELD(BRT_Disp,"Bright"," %",0,100,10,0,action2,enterEvent,noStyle)
