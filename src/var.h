@@ -18,11 +18,13 @@ const int H2_val = 4;
 const int H3_val = 5;
 const int resolution = 10;
 
+bool oneUse = false;
 bool emergency = true;
 bool WiFiCtrl = false;
 bool PhaseMode = false;
 bool BlynkMode = false;
 bool Connected2Blynk = false;
+bool Connected2Wifi = false;
 
 double k = 0.2;
 int k_menu = 1;
@@ -30,13 +32,20 @@ int encoredVal = 0;
 int encoredVal_old = 0;
 bool Wifi_connected = false;
 double step = 0.001;
-int new_f = 50;
+
+double new_freq = 50;
+int frequency = 50;
+
+int Power = 30;
+int Power_set = 100;
+
 int delay_time = 44;
-double k_Freq = 1;
+double k_Freq = 0;
 int BRT_Disp = 30;
-int blink = 0;
+int timer_0 = 0;
+int timer_1 = 0;
 int V_Print = 0;
-int cache_f=0;
+int cache_Power=0;
 
 //Encoder
 #define encA 36 
@@ -44,4 +53,5 @@ int cache_f=0;
 //Encoder button
 #define encBtn 34
 
-char auth[] = "DdoWcquVgiiZqcCwQwAQqkzo9cYw9Cee";
+char auth[] = "Vb4KJvlA_4OvjxxblOtyc2Zq4eVC1iJt";
+#define FILTER_COEF 0.1

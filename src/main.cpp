@@ -7,8 +7,9 @@
 #include <var.h>
 
 Preferences preferences;
-TaskHandle_t Task1;
-TaskHandle_t Task2;
+TaskHandle_t ServisesHandle;
+TaskHandle_t MathServisesHandle;
+TaskHandle_t SPWMHandle;
 TaskHandle_t TaskWiFi;
 WebServer Server;
 AutoConnect Portal(Server);
@@ -18,20 +19,12 @@ AutoConnectConfig Config;
 #include <addons.h>
 #include <tasks.h>
 
-
-
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
   Serial.println("Booting");
-  Serial.println("Frequency_3Ph_Gen");
-  //wifi_set();
-  //ota_start();
-  
   disableCore0WDT();
   //disableCore1WDT();
-
-  // configure LED PWM functionalitites
   ledcSetup(L1_val, freq, resolution);
   ledcSetup(L2_val, freq, resolution);
   ledcSetup(L3_val, freq, resolution);
@@ -39,7 +32,6 @@ void setup() {
   ledcSetup(H2_val, freq, resolution);
   ledcSetup(H3_val, freq, resolution);
 
-  // attach the channel to the GPIO to be controlled
   ledcAttachPin(L1, L1_val);
   ledcAttachPin(L2, L2_val);
   ledcAttachPin(L3, L3_val);
@@ -60,8 +52,19 @@ void setup() {
     10000,             /* Stack size in bytes. */
     NULL,             /* Parameter passed as input of the task */
     1,                /* Priority of the task. */
-    &Task2,           /* Task handle. */
-    0);               /* Core 1 */
+    &ServisesHandle,           /* Task handle. */
+    0);               /* Core 0 */
+
+  xTaskCreatePinnedToCore(
+    MathServises,         /* Task function. */
+    "MathServises",       /* String with name of task. */
+    10000,             /* Stack size in bytes. */
+    NULL,             /* Parameter passed as input of the task */
+    1,                /* Priority of the task. */
+    &MathServisesHandle,           /* Task handle. */
+    0);               /* Core 0 */
+
+  //vTaskDelay(1000/portTICK_PERIOD_MS);
 
   xTaskCreatePinnedToCore(
     WiFiService,       
@@ -72,9 +75,7 @@ void setup() {
     &TaskWiFi,           
     1);
 
-  vTaskDelay(2000 / portTICK_PERIOD_MS);
-  vTaskDelete(TaskWiFi);
-
+while(!Wifi_connected){vTaskDelay(1000);}
   if(PhaseMode){
   xTaskCreatePinnedToCore(
     SPWM3,       
@@ -82,7 +83,7 @@ void setup() {
     8000,          
     NULL,             
     1,             
-    &Task1,           
+    &SPWMHandle,           
     1); }
     else{
   xTaskCreatePinnedToCore(
@@ -91,7 +92,7 @@ void setup() {
     8000,          
     NULL,             
     1,             
-    &Task1,           
+    &SPWMHandle,           
     1);}              
 
 

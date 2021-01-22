@@ -1,10 +1,13 @@
 #include <Arduino.h>
+#include "KalmanFilter.h"
 #include "GyverButton.h"
+
 
 GButton butt1(encBtn); // кнопка подключена сюда (BTN_PIN --- КНОПКА --- GND)
 
 void data();
 void onConnect(IPAddress& ipaddr);
+void CheckConnection();
 
 void motor(int H1_,int H2_,int H3_, int L1_,int L2_,int L3_){
     H1_=H1_*k*k_Freq; 
@@ -19,6 +22,17 @@ void motor(int H1_,int H2_,int H3_, int L1_,int L2_,int L3_){
     ledcWrite(H1_val, H1_); //H1
     ledcWrite(H2_val, H2_); //H2
     ledcWrite(H3_val, H3_); //H3
+}
+
+void motor2(int H1_,int H2_,int H3_, int L1_,int L2_,int L3_){
+    L1_=L1_*k*k_Freq;
+    L2_=L2_*k*k_Freq;
+    ledcWrite(L1_val, L1_); //L1
+    ledcWrite(L2_val, L2_); //L2
+    ledcWrite(L3_val, 0); //L3
+    ledcWrite(H1_val, H1_); //H1
+    ledcWrite(H2_val, H2_); //H2
+    ledcWrite(H3_val, 0); //H3
 }
 
 void SPWM3( void * parameter)
@@ -75,41 +89,38 @@ void SPWM3( void * parameter)
     } 
     }
 
-    Serial.println("Ending SPWM");
-    vTaskDelete(Task1);
 }
 
 void SPWM2( void * parameter)
 {
     Serial.println("SPWM2");
     int Cycle = 0;
-
     while(1){    
     if(!emergency){
     for(Cycle = 0; Cycle <= 480; Cycle=Cycle+2){   
 
         if((Cycle>0)&&(Cycle<=80)){    //___1
-        motor(0,1023,0,SINE_LOOKUP_TABLE[Cycle],0,0); //H1 H2 H3 L1 L2 L3
+        motor2(0,1023,0,SINE_LOOKUP_TABLE[Cycle],0,0); //H1 H2 H3 L1 L2 L3
         }
         
         if((Cycle>80)&&(Cycle<=160)){    //___2 
-        motor(0,1023,0,SINE_LOOKUP_TABLE[Cycle],0,0); //H1 H2 H3 L1 L2 L3
+        motor2(0,1023,0,SINE_LOOKUP_TABLE[Cycle],0,0); //H1 H2 H3 L1 L2 L3
         }
         
         if((Cycle>160)&&(Cycle<=240)){    //___3
-        motor(0,1023,0,SINE_LOOKUP_TABLE[Cycle],0,0); //H1 H2 H3 L1 L2 L3
+        motor2(0,1023,0,SINE_LOOKUP_TABLE[Cycle],0,0); //H1 H2 H3 L1 L2 L3
         }
 
         if((Cycle>240)&&(Cycle<=320)){    //___4
-        motor(1023,0,0,0,SINE_LOOKUP_TABLE[Cycle],0); //H1 H2 H3 L1 L2 L3
+        motor2(1023,0,0,0,SINE_LOOKUP_TABLE[Cycle],0); //H1 H2 H3 L1 L2 L3
         }
 
         if((Cycle>320)&&(Cycle<=400)){    //___5
-        motor(1023,0,0,0,SINE_LOOKUP_TABLE[Cycle],0);  //H1 H2 H3 L1 L2 L3
+        motor2(1023,0,0,0,SINE_LOOKUP_TABLE[Cycle],0);  //H1 H2 H3 L1 L2 L3
         }
 
         if((Cycle>400)&&(Cycle<=480)){    //___6
-        motor(1023,0,0,0,SINE_LOOKUP_TABLE[Cycle],0); //H1 H2 H3 L1 L2 L3
+        motor2(1023,0,0,0,SINE_LOOKUP_TABLE[Cycle],0); //H1 H2 H3 L1 L2 L3
         }
         
         delayMicroseconds(delay_time);//45 mc - 50 Hz
@@ -133,37 +144,70 @@ void SPWM2( void * parameter)
     } 
     }
 
-    Serial.println("Ending SPWM");
-    vTaskDelete(Task1);
+
 }
 
 void isr() {
-    butt1.tick();  // опрашиваем в прерывании, чтобы поймать нажатие в любом случае 
+    butt1.tick(); 
 }
 
 BLYNK_WRITE(V0) //ON/OFF
 {
-  emergency = bool(param.asInt()); // assigning incoming value from pin V1 to a variable
+  emergency = bool(param.asInt()); 
 }
 
-BLYNK_WRITE(V1) //HZ
+BLYNK_WRITE(V1) //Power
 {
-    new_f = param.asInt(); // assigning incoming value from pin V1 to a variable
-    if((new_f>9)&&(new_f<71)){
-        delay_time = -37.2311 + 4098.9954 / new_f;
-        if(delay_time<0){delay_time=0;}
-        if(new_f>50){cache_f=50;}
-        else{cache_f=new_f;}
-        k_Freq = (double(map(cache_f, 10, 50, 20, 100))/100);
+    Power_set = param.asInt(); 
+    if((Power_set<30)||(Power_set>130)){
+        Power_set=100;
     }
+    Serial.println(Power_set);
 }
 
+void MathServises( void * parameter)
+{  
+//vTaskSuspend(MathServisesHandle);vTaskResume(MathServisesHandle);
+while(1){
+
+if((Power_set<30)||(Power_set>130)){  Power_set = 100;}
+if((Power<30)||(Power>130)){  Power = 100;}
+
+    if(PhaseMode){ // 3ph
+      frequency = map(Power, 30,130, 15, 65);
+
+      delay_time = -37.2311 + 4098.9954 / frequency;
+      if(delay_time<0){delay_time=0;}
+
+
+      if(Power>100){cache_Power=100;}
+      else{cache_Power=Power;}
+      k_Freq = double(cache_Power)/100;
+    }
+    else{ // 2ph
+      if(Power>100){
+          frequency = map(Power, 30,130, 15, 65);
+          cache_Power = 100;}
+      else{
+          cache_Power=Power;
+          frequency = 50;}
+
+      k_Freq = double(cache_Power)/100;
+      delay_time = -37.2311 + 4098.9954 / frequency;
+      if(delay_time<0){delay_time=0;}
+    }
+
+Power = filter(Power_set+1);
+
+vTaskDelay(300/portTICK_PERIOD_MS);  
+}
+}
 
 void Servises( void * parameter)
 {   
     
     Serial.println("Servises");
-    //Wifi_connected = true;
+
     data();
     Wire.begin();
     u8g2.begin();
@@ -172,28 +216,33 @@ void Servises( void * parameter)
 
     attachInterrupt(1, isr, CHANGE);
 
-    butt1.setDebounce(80);      // настройка антидребезга (по умолчанию 80 мс)
-    butt1.setTimeout(300);      // настройка таймаута на удержание (по умолчанию 500 мс)
+    butt1.setDebounce(80);
+    butt1.setTimeout(300);
     butt1.setType(HIGH_PULL);
 
     ESP32Encoder::useInternalWeakPullResistors=UP;
     encoder.attachHalfQuad(encA, encB);
     encoder.clearCount();
-        
-    //nav.timeOut = 1;
+
     nav.idleTask=MainScreen;
-     vTaskDelay(1500 / portTICK_PERIOD_MS);
+    //vTaskDelay(2000 / portTICK_PERIOD_MS);
     nav.idleOn(MainScreen);
 
     while(1){
-    blink++;
+
+    timer_0++;
+    timer_1++;
+    if(timer_0>40){timer_0=0;}
+    if(timer_1>150){timer_1=0; CheckConnection();}
 
     butt1.tick();
-    Portal.handleClient();
-    if(BlynkMode&&Connected2Blynk){Blynk.run();}
 
-    if(blink>40){blink=0;}
-    V_Print = int(k_Freq*220*k);
+    if(WiFiCtrl){Portal.handleClient();}
+    if(BlynkMode&&Blynk.connected()){Blynk.run();}
+    if(Wifi_connected&&oneUse){vTaskDelete(TaskWiFi);oneUse = false;}   
+
+    if(emergency){V_Print = 0;}
+    else{V_Print = int(k_Freq*k*220);}    
 
     encoredVal = encoder.getCount();
     if(encoredVal > encoredVal_old){
@@ -225,26 +274,25 @@ void Servises( void * parameter)
     u8g2.firstPage();
     do nav.doOutput(); while(u8g2.nextPage());
     vTaskDelay(50/portTICK_PERIOD_MS);  
+    
 
     }
-
-    Serial.println("Ending Servises");
-    vTaskDelete(Task2);
 }
 
 void WiFiService( void * parameter)
 {
     Serial.println("WiFiService");
- 
     Config.autoReconnect = true;
+    Config.ota = AC_OTA_BUILTIN;
     Config.title = "Controller Setup";
     Config.homeUri = "/_ac/config";
     Config.apid = "Controller_Setup";
     Config.psk = "";
     Config.bootUri = AC_ONBOOTURI_HOME;
-    Config.menuItems = AC_MENUITEM_CONFIGNEW | AC_MENUITEM_RESET | AC_MENUITEM_DISCONNECT;
+    Config.menuItems = AC_MENUITEM_CONFIGNEW | AC_MENUITEM_RESET | AC_MENUITEM_DISCONNECT | AC_MENUITEM_UPDATE;
     Portal.config(Config);
     Portal.onConnect(onConnect);  // Register the ConnectExit function
+
     if (Portal.begin()) {
     Serial.println("HTTP server:" + WiFi.localIP().toString());
     }
@@ -261,45 +309,55 @@ void data(){
     preferences.begin("FrequencyData", false);
     if(preferences.getUInt("FirstStart", 0)!=3){
         preferences.putUInt("FirstStart", 3);
-        preferences.putUInt("Frequency", 50);
+        preferences.putUInt("Power", 100);
         preferences.putUInt("Bright", 30);
         preferences.putUInt("StartTime", 1);
         preferences.putBool("WiFiCtrl", true);
         preferences.putBool("PhaseMode", true);
         preferences.putBool("BlynkMode", false);
     }
-    new_f = preferences.getUInt("Frequency", 0);
-    BRT_Disp = preferences.getUInt("Bright", 0);
-    k_menu = preferences.getUInt("StartTime", 0);
+    Power_set = preferences.getUInt("Power", 100);
+    BRT_Disp = preferences.getUInt("Bright", 50);
+    k_menu = preferences.getUInt("StartTime", 1);
     WiFiCtrl = preferences.getBool("WiFiCtrl", true);
     PhaseMode = preferences.getBool("PhaseMode", true);
     BlynkMode = preferences.getBool("BlynkMode", false);
-    
+    preferences.end();
+
     if(!WiFiCtrl){Wifi_connected = true;emergency = false;}
-    if((new_f<10)||(new_f>70)){new_f=50;}
+
     if((BRT_Disp<0)||(BRT_Disp>100)){BRT_Disp=30;}
     if((k_menu<1)||(k_menu>10)){k_menu=1;}
-
     step = step*k_menu;
-    delay_time = -37.2311 + 4098.9954 / new_f;
-    if(delay_time<0){delay_time=0;}
-    if(new_f>50){cache_f=50;}
-    else{cache_f=new_f;}
-    k_Freq = (double(map(cache_f, 10, 50, 20, 100))/100);
-
-    preferences.end();
+    
 }
 
 void onConnect(IPAddress& ipaddr) {
-  Serial.print("WiFi connected with ");
-  Serial.print(WiFi.SSID());
-  Serial.print(", IP:");
-  Serial.println(ipaddr.toString());
-  Wifi_connected = true;
-  emergency = false;
-    if(BlynkMode){
-        Blynk.config(auth);  // in place of Blynk.begin(auth, ssid, pass);
-        while (Blynk.connect() == false) { }
-        Connected2Blynk = Blynk.connected();
-    }
+    Serial.print("WiFi connected with ");
+    Serial.print(WiFi.SSID());
+    Serial.print(", IP:");
+    Serial.println(ipaddr.toString());
+    Wifi_connected = true;
+    emergency = false;
+    // if(BlynkMode){
+    Blynk.config(auth);
+    Blynk.connect(3333);
+    CheckConnection();
+}
+
+void CheckConnection(){ 
+  if(!Blynk.connected()){
+    Connected2Blynk = false;
+    if(BlynkMode){Blynk.connect(); }
+  }
+  else{
+      if(BlynkMode){Connected2Blynk = true;}
+  }
+
+  if((WiFi.status() == WL_CONNECTED)&&WiFiCtrl){
+      Connected2Wifi = true;
+  }
+  else{
+      Connected2Wifi = false;
+  }
 }

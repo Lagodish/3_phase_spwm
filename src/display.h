@@ -37,18 +37,12 @@ const colorDef<uint8_t> colors[6] MEMMODE={
 };
 
 result action1(eventMask e,navNode& nav, prompt &item) {
-    if((new_f>9)&&(new_f<71)){
-    delay_time = -37.2311 + 4098.9954 / new_f;
-    if(delay_time<0){delay_time=0;}
-    if(new_f>50){cache_f=50;}
-    else{cache_f=new_f;}
-    k_Freq = (double(map(cache_f, 10, 50, 20, 100))/100);
+    if((Power_set<30)||(Power_set>130)){  Power_set = 100;}
 
-    
     preferences.begin("FrequencyData", false);
-    preferences.putUInt("Frequency", new_f);
+    preferences.putUInt("Power", Power_set);
     preferences.end();
-    }
+    
 
     return proceed;
 }
@@ -117,7 +111,7 @@ TOGGLE(BlynkMode,setBlynk,"Blynk: ",action6,enterEvent,noStyle//,doExit,enterEve
 
 
 MENU(mainMenu, "Menu" ,doNothing,noEvent,noStyle
-  ,FIELD(new_f,"Freq"," Hz",10,70,1,0,action1,enterEvent,noStyle)
+  ,FIELD(Power_set,"Power"," %",30,130,1,0,action1,enterEvent,noStyle)
   ,FIELD(k_menu,"StartTime","X",1,10,1,0,action3,enterEvent,noStyle)
   ,SUBMENU(setPhase)
   ,SUBMENU(setWiFi)
@@ -142,7 +136,7 @@ result MainScreen(menuOut& o,idleEvent e) {
     if(Wifi_connected){
     u8g2.setFont(u8g2_font_fub20_tf);
     o.setCursor(0,1);
-    o.print(new_f); 
+    o.print(frequency); 
     o.setCursor(5,1);
     o.print("Hz");   
 
@@ -151,11 +145,12 @@ result MainScreen(menuOut& o,idleEvent e) {
     if(V_Print>99){o.setCursor(7,3);} 
     else{o.setCursor(5,3);}
     o.print("V");   
-    if(blink<20){
+    if(timer_0<20){
     u8g2.setFont(u8g2_font_open_iconic_all_4x_t);
     u8g2.drawUTF8( (16 * 6), 43, "\u00AA");} //x y top left
     u8g2.setFont(u8g2_font_open_iconic_all_2x_t);
-    if(WiFi.status() == WL_CONNECTED){u8g2.drawUTF8( 104, 64, "\u00F7");}} //x y top left
+    if(Connected2Wifi){u8g2.drawUTF8( 104, 64, "\u00F7");} //WI-FI
+    if(Connected2Blynk){u8g2.drawUTF8( 86, 64, "\u005F");}} //Blynk
     else{
     u8g2.setFont(u8g2_font_fub20_tf);
     o.setCursor(1,1);
