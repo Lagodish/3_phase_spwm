@@ -59,7 +59,7 @@ result action2(eventMask e,navNode& nav, prompt &item) {
 }
 
 result action3(eventMask e,navNode& nav, prompt &item) {
-    if((k_menu>=1)&&(k_menu<=10)){
+    if((k_menu>=1)&&(k_menu<=5)){
     preferences.begin("FrequencyData", false);
     preferences.putUInt("StartTime", k_menu);
     preferences.end();
@@ -126,7 +126,7 @@ TOGGLE(SinMode,setSin,"Sin Mode: ",action7,enterEvent,noStyle//,doExit,enterEven
 
 MENU(mainMenu, "Menu" ,doNothing,noEvent,noStyle
   ,FIELD(Power_set,"Power"," %",30,130,1,0,action1,enterEvent,noStyle)
-  ,FIELD(k_menu,"StartTime","X",1,10,1,0,action3,enterEvent,noStyle)
+  ,FIELD(k_menu,"StartTime","X",1,5,1,0,action3,enterEvent,noStyle)
   ,SUBMENU(setPhase)
   ,SUBMENU(setSin)
   ,SUBMENU(setWiFi)
@@ -146,8 +146,9 @@ const char Storm_SYMBOL[] = { 0xAA, '\0' };
 result MainScreen(menuOut& o,idleEvent e) {
   o.clear();
    switch(e) {
-    case idleStart:{break;}
+    case idleStart:{opennedMenu = true;break;}
     case idling:{
+    opennedMenu = false;
     if(Wifi_connected){
     u8g2.setFont(u8g2_font_fub20_tf);
     o.setCursor(0,1);
@@ -177,7 +178,7 @@ result MainScreen(menuOut& o,idleEvent e) {
     o.print("or join ESP WiFi");  
     }
     break;}
-    case idleEnd:{u8g2.setFont(fontName);break;}
+    case idleEnd:{u8g2.setFont(fontName);opennedMenu = true;break;}
   }
 
   return proceed;

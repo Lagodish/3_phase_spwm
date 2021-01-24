@@ -37,11 +37,11 @@ void motor2(int H1_,int H2_,int H3_, int L1_,int L2_,int L3_){
 
 void SPWM3( void * parameter)
 {
-    Serial.println("SPWM3");
+    Serial.println("SPWM_3");
     int Cycle = 0;
 
     while(1){    
-    if(!emergency){
+    if(!emergency&&!opennedMenu){
     for(Cycle = 0; Cycle <= 480; Cycle=Cycle+2){   
 
         if((Cycle>0)&&(Cycle<=80)){    //___1
@@ -76,16 +76,10 @@ void SPWM3( void * parameter)
         if(k<0){k=0.0;step=0.0;}   
     }
     else{
-        ledcWrite(L1_val, 0);
-        ledcWrite(L2_val, 0);
-        ledcWrite(L3_val, 0);
-        ledcWrite(H1_val, 0);
-        ledcWrite(H2_val, 0);
-        ledcWrite(H3_val, 0);
-        Serial.println("Emergency stop!");
+        motor2(0,0,0,0,0,0); //H1 H2 H3 L1 L2 L3
         k=0.2;
         step = 0.001;
-        vTaskDelay(1000);
+        vTaskDelay(3000/portTICK_PERIOD_MS);  
     } 
     }
 
@@ -93,10 +87,10 @@ void SPWM3( void * parameter)
 
 void SPWM2( void * parameter)
 {
-    Serial.println("SPWM2");
+    Serial.println("SPWM_2");
     int Cycle = 0;
     while(1){    
-    if(!emergency){
+    if(!emergency&&!opennedMenu){
     for(Cycle = 0; Cycle <= 480; Cycle=Cycle+2){   
 
         if((Cycle>0)&&(Cycle<=80)){    //___1
@@ -131,16 +125,11 @@ void SPWM2( void * parameter)
         if(k<0){k=0.0;step=0.0;}   
     }
     else{
-        ledcWrite(L1_val, 0);
-        ledcWrite(L2_val, 0);
-        ledcWrite(L3_val, 0);
-        ledcWrite(H1_val, 0);
-        ledcWrite(H2_val, 0);
-        ledcWrite(H3_val, 0);
-        Serial.println("Emergency stop!");
+        motor2(0,0,0,0,0,0); //H1 H2 H3 L1 L2 L3
+        Serial.println("Stopped!");
         k=0.2;
         step = 0.001;
-        vTaskDelay(1000);
+        vTaskDelay(3000/portTICK_PERIOD_MS);  
     } 
     }
 
@@ -167,7 +156,7 @@ BLYNK_WRITE(V1) //Power
 
 void MathServises( void * parameter)
 {  
-//vTaskSuspend(MathServisesHandle);vTaskResume(MathServisesHandle);
+
 while(1){
 
 if((Power_set<30)||(Power_set>130)){  Power_set = 100;}
@@ -225,7 +214,6 @@ void Servises( void * parameter)
     encoder.clearCount();
 
     nav.idleTask=MainScreen;
-    //vTaskDelay(2000 / portTICK_PERIOD_MS);
     nav.idleOn(MainScreen);
 
     while(1){
@@ -329,7 +317,7 @@ void data(){
     if(!WiFiCtrl){Wifi_connected = true;emergency = false;}
 
     if((BRT_Disp<0)||(BRT_Disp>100)){BRT_Disp=30;}
-    if((k_menu<1)||(k_menu>10)){k_menu=1;}
+    if((k_menu<1)||(k_menu>5)){k_menu=1;}
     step = step*k_menu;
     
 }

@@ -20,6 +20,7 @@ const int resolution = 10;
 
 bool oneUse = false;
 bool emergency = true;
+bool opennedMenu = false;
 bool WiFiCtrl = false;
 bool SinMode = false;
 bool PhaseMode = false;
