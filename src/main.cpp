@@ -20,7 +20,7 @@ AutoConnectConfig Config;
 #include <tasks.h>
 
 void setup() {
-  // put your setup code here, to run once:
+
   Serial.begin(9600);
   Serial.println("Booting");
   disableCore0WDT();
@@ -53,24 +53,22 @@ void setup() {
   SINE_TABLE[1][i]=SINE_LOOKUP_TABLE_2[i];}
 
   xTaskCreatePinnedToCore(
-    Servises,         /* Task function. */
-    "Servises",       /* String with name of task. */
-    10000,             /* Stack size in bytes. */
-    NULL,             /* Parameter passed as input of the task */
-    1,                /* Priority of the task. */
-    &ServisesHandle,           /* Task handle. */
-    0);               /* Core 0 */
+    Servises,
+    "Servises",
+    10000,
+    NULL,
+    1,
+    &ServisesHandle,
+    0);       
 
   xTaskCreatePinnedToCore(
-    MathServises,         /* Task function. */
-    "MathServises",       /* String with name of task. */
-    10000,             /* Stack size in bytes. */
-    NULL,             /* Parameter passed as input of the task */
-    1,                /* Priority of the task. */
-    &MathServisesHandle,           /* Task handle. */
-    0);               /* Core 0 */
-
-  //vTaskDelay(1000/portTICK_PERIOD_MS);
+    MathServises,         
+    "MathServises",    
+    10000,
+    NULL,
+    1,
+    &MathServisesHandle,
+    0);
 
   xTaskCreatePinnedToCore(
     WiFiService,       
@@ -81,27 +79,26 @@ void setup() {
     &TaskWiFi,           
     1);
 
-while(!Wifi_connected){vTaskDelay(1000);}
+  while(!Wifi_connected){vTaskDelay(1000);}
+
   if(PhaseMode){
-  xTaskCreatePinnedToCore(
-    SPWM3,       
-    "SPWM3",        
-    8000,          
-    NULL,             
-    1,             
-    &SPWMHandle,           
-    1); }
-    else{
-  xTaskCreatePinnedToCore(
-    SPWM2,       
-    "SPWM2",        
-    8000,          
-    NULL,             
-    1,             
-    &SPWMHandle,           
-    1);}              
-
-
+    xTaskCreatePinnedToCore(
+      SPWM3,       
+      "SPWM3",        
+      8000,          
+      NULL,             
+      1,             
+      &SPWMHandle,           
+      1);}
+  else{
+    xTaskCreatePinnedToCore(
+      SPWM2,       
+      "SPWM2",        
+      8000,          
+      NULL,             
+      1,             
+      &SPWMHandle,           
+      1);}
 }
 
 void loop()

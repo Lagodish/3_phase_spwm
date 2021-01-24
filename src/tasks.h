@@ -136,27 +136,18 @@ void SPWM2( void * parameter)
 
 }
 
-void isr() {
-    butt1.tick(); 
-}
+BLYNK_WRITE(V0){
+    emergency = bool(param.asInt());}
 
-BLYNK_WRITE(V0) //ON/OFF
-{
-  emergency = bool(param.asInt()); 
-}
-
-BLYNK_WRITE(V1) //Power
-{
+BLYNK_WRITE(V1){
     Power_set = param.asInt(); 
     if((Power_set<30)||(Power_set>130)){
         Power_set=100;
-    }
-    Serial.println(Power_set);
-}
+    }}
 
 void MathServises( void * parameter)
 {  
-
+String out_data = "";
 while(1){
 
 if((Power_set<30)||(Power_set>130)){  Power_set = 100;}
@@ -186,6 +177,17 @@ if((Power<30)||(Power>130)){  Power = 100;}
       if(delay_time<0){delay_time=0;}
     }
 
+if(BlynkMode&&Blynk.connected()){
+if(PhaseMode){out_data="3-ph";}
+else{out_data="1-ph";}
+if(SinMode){out_data+="   SPWM";}
+else{out_data+="   THIPWM";}
+Blynk.virtualWrite(V4, out_data);
+Blynk.virtualWrite(V2, frequency);
+if(emergency||opennedMenu){Blynk.virtualWrite(V3, 0);}
+else{Blynk.virtualWrite(V3, int(k_Freq*k*220));} 
+}
+
 Power = filter(Power_set+1);
 
 vTaskDelay(300/portTICK_PERIOD_MS);  
@@ -202,8 +204,6 @@ void Servises( void * parameter)
     u8g2.begin();
     u8g2.enableUTF8Print();	
     u8g2.setFont(fontName);
-
-    attachInterrupt(1, isr, CHANGE);
 
     butt1.setDebounce(80);
     butt1.setTimeout(300);
