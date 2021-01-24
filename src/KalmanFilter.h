@@ -1,5 +1,5 @@
 #include <Arduino.h>
-float errmeasure = 10; // разброс измерения
+float errmeasure = 50; // разброс измерения
 float errestimate = 10;  // разброс оценки
 float q = 0.1;  // скорость изменения значений
 
