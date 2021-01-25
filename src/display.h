@@ -67,14 +67,6 @@ result action3(eventMask e,navNode& nav, prompt &item) {
     return proceed;
 }
 
-result action4(eventMask e,navNode& nav, prompt &item) {
-    if((WiFiCtrl==false)||(WiFiCtrl==true)){
-    preferences.begin("FrequencyData", false);
-    preferences.putBool("WiFiCtrl", WiFiCtrl);
-    preferences.end();
-    }
-    return proceed;
-}
 
 result action5(eventMask e,navNode& nav, prompt &item) {
     if((PhaseMode==false)||(PhaseMode==true)){
@@ -82,17 +74,11 @@ result action5(eventMask e,navNode& nav, prompt &item) {
     preferences.putBool("PhaseMode", PhaseMode);
     preferences.end();
     }
+    vTaskDelay(600/portTICK_PERIOD_MS);
+    ESP.restart();
     return proceed;
 }
 
-result action6(eventMask e,navNode& nav, prompt &item) {
-    if((BlynkMode==false)||(BlynkMode==true)){
-    preferences.begin("FrequencyData", false);
-    preferences.putBool("BlynkMode", BlynkMode);
-    preferences.end();
-    }
-    return proceed;
-}
 
 result action7(eventMask e,navNode& nav, prompt &item) {
     if((SinMode==false)||(SinMode==true)){
@@ -103,20 +89,13 @@ result action7(eventMask e,navNode& nav, prompt &item) {
     return proceed;
 }
 
-TOGGLE(WiFiCtrl,setWiFi,"WiFi: ",action4,enterEvent,noStyle//,doExit,enterEvent,noStyle
-  ,VALUE("On",HIGH,doNothing,noEvent)
-  ,VALUE("Off",LOW,doNothing,noEvent)
-);
+
 
 TOGGLE(PhaseMode,setPhase,"Phase: ",action5,enterEvent,noStyle//,doExit,enterEvent,noStyle
   ,VALUE("3",HIGH,doNothing,noEvent)
   ,VALUE("1",LOW,doNothing,noEvent)
 );
 
-TOGGLE(BlynkMode,setBlynk,"Blynk: ",action6,enterEvent,noStyle//,doExit,enterEvent,noStyle
-  ,VALUE("On",HIGH,doNothing,noEvent)
-  ,VALUE("Off",LOW,doNothing,noEvent)
-);
 
 TOGGLE(SinMode,setSin,"Sin Mode: ",action7,enterEvent,noStyle//,doExit,enterEvent,noStyle
   ,VALUE("SPWM",HIGH,doNothing,noEvent)
@@ -129,8 +108,6 @@ MENU(mainMenu, "Menu" ,doNothing,noEvent,noStyle
   ,FIELD(k_menu,"StartTime","X",1,5,1,0,action3,enterEvent,noStyle)
   ,SUBMENU(setPhase)
   ,SUBMENU(setSin)
-  ,SUBMENU(setWiFi)
-  ,SUBMENU(setBlynk)
   ,FIELD(BRT_Disp,"Bright"," %",0,100,10,0,action2,enterEvent,noStyle)
   ,EXIT("Back")
 );
@@ -149,7 +126,7 @@ result MainScreen(menuOut& o,idleEvent e) {
     case idleStart:{opennedMenu = true;break;}
     case idling:{
     opennedMenu = false;
-    if(Wifi_connected){
+    
     u8g2.setFont(u8g2_font_fub20_tf);
     o.setCursor(0,1);
     o.print(frequency); 
@@ -165,18 +142,6 @@ result MainScreen(menuOut& o,idleEvent e) {
     u8g2.setFont(u8g2_font_open_iconic_all_4x_t);
     u8g2.drawUTF8( (16 * 6), 43, "\u00AA");} //x y top left
     u8g2.setFont(u8g2_font_open_iconic_all_2x_t);
-    if(Connected2Wifi){u8g2.drawUTF8( 104, 64, "\u00F7");} //WI-FI
-    if(Connected2Blynk){u8g2.drawUTF8( 86, 64, "\u005F");}} //Blynk
-    else{
-    u8g2.setFont(u8g2_font_fub20_tf);
-    o.setCursor(1,1);
-    o.print("No Wi-Fi");   
-    u8g2.setFont(fontName);
-    o.setCursor(0,2);
-    o.print("Press btn to start");  
-    o.setCursor(0,3);
-    o.print("or join ESP WiFi");  
-    }
     break;}
     case idleEnd:{u8g2.setFont(fontName);opennedMenu = true;break;}
   }

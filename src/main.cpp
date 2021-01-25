@@ -1,28 +1,13 @@
 #include <Arduino.h>
-#include <WiFi.h>
-#include <WebServer.h>
-#include <BlynkSimpleEsp32.h>
-#include <AutoConnect.h>
 #include <Preferences.h> 
 #include <var.h>
-
-Preferences preferences;
-TaskHandle_t ServisesHandle;
-TaskHandle_t MathServisesHandle;
-TaskHandle_t SPWMHandle;
-TaskHandle_t TaskWiFi;
-WebServer Server;
-AutoConnect Portal(Server);
-AutoConnectConfig Config;    
-
 #include <display.h>
-#include <addons.h>
 #include <tasks.h>
 
 void setup() {
 
   Serial.begin(9600);
-  Serial.println("Booting");
+  Serial.println("\nBooting");
   disableCore0WDT();
   //disableCore1WDT();
   ledcSetup(L1_val, freq, resolution);
@@ -46,12 +31,6 @@ void setup() {
   ledcWrite(H2_val, 0);
   ledcWrite(H3_val, 0);
 
-  for(int i = 0; i < SINE_TABLE_SIZE; i++){
-  SINE_TABLE[0][i]=SINE_LOOKUP_TABLE[i];}
-
-  for(int i = 0; i < SINE_TABLE_SIZE; i++){
-  SINE_TABLE[1][i]=SINE_LOOKUP_TABLE_2[i];}
-
   xTaskCreatePinnedToCore(
     Servises,
     "Servises",
@@ -70,16 +49,7 @@ void setup() {
     &MathServisesHandle,
     0);
 
-  xTaskCreatePinnedToCore(
-    WiFiService,       
-    "WiFiService",        
-    8000,          
-    NULL,             
-    1,             
-    &TaskWiFi,           
-    1);
-
-  while(!Wifi_connected){vTaskDelay(1000);}
+  while(!ready_data){vTaskDelay(500/portTICK_PERIOD_MS);}
 
   if(PhaseMode){
     xTaskCreatePinnedToCore(
