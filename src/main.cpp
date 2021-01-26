@@ -9,27 +9,6 @@ void setup() {
   Serial.begin(9600);
   Serial.println("\nBooting");
   disableCore0WDT();
-  //disableCore1WDT();
-  ledcSetup(L1_val, freq, resolution);
-  ledcSetup(L2_val, freq, resolution);
-  ledcSetup(L3_val, freq, resolution);
-  ledcSetup(H1_val, freq, resolution);
-  ledcSetup(H2_val, freq, resolution);
-  ledcSetup(H3_val, freq, resolution);
-
-  ledcAttachPin(L1, L1_val);
-  ledcAttachPin(L2, L2_val);
-  ledcAttachPin(L3, L3_val);
-  ledcAttachPin(H1, H1_val);
-  ledcAttachPin(H2, H2_val);
-  ledcAttachPin(H3, H3_val);
-
-  ledcWrite(L1_val, 0);
-  ledcWrite(L2_val, 0);
-  ledcWrite(L3_val, 0);
-  ledcWrite(H1_val, 0);
-  ledcWrite(H2_val, 0);
-  ledcWrite(H3_val, 0);
 
   xTaskCreatePinnedToCore(
     Servises,

@@ -34,6 +34,20 @@ void motor2(int H1_,int H2_,int H3_, int L1_,int L2_,int L3_){
 
 void SPWM( void * parameter)
 {
+ledcSetup(L1_val, freq, resolution);
+ledcSetup(L2_val, freq, resolution);
+ledcSetup(L3_val, freq, resolution);
+ledcSetup(H1_val, freq, resolution);
+ledcSetup(H2_val, freq, resolution);
+ledcSetup(H3_val, freq, resolution);
+
+ledcAttachPin(L1, L1_val);
+ledcAttachPin(L2, L2_val);
+ledcAttachPin(L3, L3_val);
+ledcAttachPin(H1, H1_val);
+ledcAttachPin(H2, H2_val);
+ledcAttachPin(H3, H3_val);
+
 if(PhaseMode){ //3ph
 Serial.println("SPWM_3");
 while(1){    
