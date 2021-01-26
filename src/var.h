@@ -35,6 +35,7 @@ const double FILTER_COEF = 0.1;
 
 bool emergency = false;
 bool opennedMenu = false;
+bool reboot = false;
 bool SinMode = false;
 bool PhaseMode = false;
 bool ready_data = false;
@@ -45,10 +46,9 @@ int encoredVal = 0;
 int encoredVal_old = 0;
 double step = 0.001;
 
-double new_freq = 50;
-uint8_t frequency = 50;
+uint8_t frequency = 20;
 
-uint8_t Power = 30;
+uint8_t Power = 40;
 uint8_t Power_set = 100;
 uint8_t cache_Power=0;
 

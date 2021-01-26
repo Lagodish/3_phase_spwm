@@ -36,7 +36,7 @@ void setup() {
     "Servises",
     10000,
     NULL,
-    1,
+    2,
     &ServisesHandle,
     0);       
 
@@ -50,28 +50,17 @@ void setup() {
     0);
 
   while(!ready_data){vTaskDelay(500/portTICK_PERIOD_MS);}
-
-  if(PhaseMode){
-    xTaskCreatePinnedToCore(
-      SPWM3,       
-      "SPWM3",        
-      8000,          
-      NULL,             
-      1,             
-      &SPWMHandle,           
-      1);}
-  else{
-    xTaskCreatePinnedToCore(
-      SPWM2,       
-      "SPWM2",        
-      8000,          
-      NULL,             
-      1,             
-      &SPWMHandle,           
-      1);}
+  xTaskCreatePinnedToCore(
+    SPWM,       
+    "SPWM",        
+    10000,          
+    NULL,             
+    2,             
+    &SPWMHandle,           
+    1);
 }
 
 void loop()
 {
-   vTaskDelete(NULL);
+  vTaskDelete(NULL);
 }

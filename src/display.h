@@ -37,7 +37,7 @@ const colorDef<uint8_t> colors[6] MEMMODE={
 };
 
 result action1(eventMask e,navNode& nav, prompt &item) {
-    if((Power_set<30)||(Power_set>130)){  Power_set = 100;}
+    if((Power_set<40)||(Power_set>130)){  Power_set = 100;}
 
     preferences.begin("FrequencyData", false);
     preferences.putUInt("Power", Power_set);
@@ -59,7 +59,7 @@ result action2(eventMask e,navNode& nav, prompt &item) {
 }
 
 result action3(eventMask e,navNode& nav, prompt &item) {
-    if((k_menu>=1)&&(k_menu<=5)){
+    if((k_menu>=1)&&(k_menu<=4)){
     preferences.begin("FrequencyData", false);
     preferences.putUInt("StartTime", k_menu);
     preferences.end();
@@ -69,23 +69,22 @@ result action3(eventMask e,navNode& nav, prompt &item) {
 
 
 result action5(eventMask e,navNode& nav, prompt &item) {
-    if((PhaseMode==false)||(PhaseMode==true)){
+
     preferences.begin("FrequencyData", false);
     preferences.putBool("PhaseMode", PhaseMode);
     preferences.end();
-    }
-    vTaskDelay(600/portTICK_PERIOD_MS);
-    ESP.restart();
+    reboot = true;
+
     return proceed;
 }
 
 
 result action7(eventMask e,navNode& nav, prompt &item) {
-    if((SinMode==false)||(SinMode==true)){
+    
     preferences.begin("FrequencyData", false);
     preferences.putBool("SinMode", SinMode);
     preferences.end();
-    }
+    
     return proceed;
 }
 
@@ -104,8 +103,8 @@ TOGGLE(SinMode,setSin,"Sin Mode: ",action7,enterEvent,noStyle//,doExit,enterEven
 
 
 MENU(mainMenu, "Menu" ,doNothing,noEvent,noStyle
-  ,FIELD(Power_set,"Power"," %",30,130,1,0,action1,enterEvent,noStyle)
-  ,FIELD(k_menu,"StartTime","X",1,5,1,0,action3,enterEvent,noStyle)
+  ,FIELD(Power_set,"Power"," %",40,130,1,0,action1,enterEvent,noStyle)
+  ,FIELD(k_menu,"StartTime","X",1,4,1,0,action3,enterEvent,noStyle)
   ,SUBMENU(setPhase)
   ,SUBMENU(setSin)
   ,FIELD(BRT_Disp,"Bright"," %",0,100,10,0,action2,enterEvent,noStyle)
