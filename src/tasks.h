@@ -218,7 +218,7 @@ while(1){
 
 void data(){
     preferences.begin("FrequencyData", false);
-    Power_set = preferences.getUInt("Power", 100); //TODO!!
+    Power_set = preferences.getUInt("Power", 100); 
     BRT_Disp = preferences.getUInt("Bright", 50);
     k_menu = preferences.getUInt("StartTime", 1);
     PhaseMode = preferences.getBool("PhaseMode", true);
