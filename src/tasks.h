@@ -138,8 +138,9 @@ if((Power_set<30)||(Power_set>130)){  Power_set = 100;}
 if((Power<30)||(Power>130)){  Power = 100;}
 
     if(PhaseMode){ // 3ph
-      frequency = map(Power*k, 30,130, 15, 65);
-
+      if(Power*k>40){frequency = map(Power*k, 40,130, 20, 65);}
+      else{frequency=20;}
+      
       delay_time = -37.2311 + 4098.9954 / frequency;
       if(delay_time<0){delay_time=0;}
 
