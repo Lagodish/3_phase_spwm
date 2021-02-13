@@ -26,10 +26,9 @@ void motor2(int H1_,int H2_,int H3_, int L1_,int L2_,int L3_){
     L2_=L2_*k*k_Freq;
     ledcWrite(L1_val, L1_); //L1
     ledcWrite(L2_val, L2_); //L2
-    ledcWrite(L3_val, 0); //L3
     ledcWrite(H1_val, H1_); //H1
     ledcWrite(H2_val, H2_); //H2
-    ledcWrite(H3_val, 0); //H3
+    
 }
 
 void SPWM( void * parameter)
@@ -94,31 +93,19 @@ while(1){
 }
 else{ //1ph
 Serial.println("SPWM_1");
+ledcWrite(H3_val, 0); //H3
+ledcWrite(L3_val, 0); //L3
 while(1){    
     if(!emergency&&!opennedMenu){
     for(int Cycle = 0; Cycle <= 480; Cycle=Cycle+2){   
 
-        if((Cycle>0)&&(Cycle<=80)){    //___1
+        if((Cycle==240)||(Cycle==480)){
+        motor2(0,0,0,0,0,0); //H1 H2 H3 L1 L2 L3
+        }
+        if((Cycle>0)&&(Cycle<240)){   
         motor2(0,1023,0,SINE_TABLE[SinMode][Cycle],0,0); //H1 H2 H3 L1 L2 L3
         }
-        
-        if((Cycle>80)&&(Cycle<=160)){    //___2 
-        motor2(0,1023,0,SINE_TABLE[SinMode][Cycle],0,0); //H1 H2 H3 L1 L2 L3
-        }
-        
-        if((Cycle>160)&&(Cycle<=240)){    //___3
-        motor2(0,1023,0,SINE_TABLE[SinMode][Cycle],0,0); //H1 H2 H3 L1 L2 L3
-        }
-
-        if((Cycle>240)&&(Cycle<=320)){    //___4
-        motor2(1023,0,0,0,SINE_TABLE[SinMode][Cycle],0); //H1 H2 H3 L1 L2 L3
-        }
-
-        if((Cycle>320)&&(Cycle<=400)){    //___5
-        motor2(1023,0,0,0,SINE_TABLE[SinMode][Cycle],0);  //H1 H2 H3 L1 L2 L3
-        }
-
-        if((Cycle>400)&&(Cycle<=480)){    //___6
+        if((Cycle>240)&&(Cycle<480)){   
         motor2(1023,0,0,0,SINE_TABLE[SinMode][Cycle],0); //H1 H2 H3 L1 L2 L3
         }
         
@@ -187,7 +174,7 @@ void Servises( void * parameter)
     Serial.println("Servises");
     data();
     
-    Wire.begin();
+    Wire.begin(21,22, 50000);
     u8g2.begin();
     u8g2.enableUTF8Print();	
     u8g2.setFont(fontName);
@@ -226,6 +213,8 @@ while(1){
     
     u8g2.firstPage();
     do nav.doOutput(); while(u8g2.nextPage());
+
+
     vTaskDelay(50/portTICK_PERIOD_MS);  
     }
 }
