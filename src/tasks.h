@@ -47,13 +47,15 @@ ledcAttachPin(H1, H1_val);
 ledcAttachPin(H2, H2_val);
 ledcAttachPin(H3, H3_val);
 
+motor(0,0,0,0,0,0); //H1 H2 H3 L1 L2 L3
+
 if(PhaseMode){ //3ph
 Serial.println("SPWM_3");
 while(1){    
     if(!emergency&&!opennedMenu){
     for(int Cycle = 0; Cycle <= 480; Cycle=Cycle+2){   
 
-        if((Cycle>0)&&(Cycle<=80)){    //___1
+        if((Cycle>=0)&&(Cycle<=80)){    //___1
         motor(SINE_TABLE[SinMode][Cycle],0,SINE_TABLE[SinMode][Cycle+160], 0, SINE_TABLE[SinMode][Cycle+80], 0); //H1 H2 H3 L1 L2 L3
         }
         
@@ -85,7 +87,7 @@ while(1){
         if(k>1.0){k=1.0;}}
     }
     else{
-        motor2(0,0,0,0,0,0); //H1 H2 H3 L1 L2 L3
+        motor(0,0,0,0,0,0); //H1 H2 H3 L1 L2 L3
         k=0.2;
         vTaskDelay(1000/portTICK_PERIOD_MS);  
     } 
@@ -93,8 +95,6 @@ while(1){
 }
 else{ //1ph
 Serial.println("SPWM_1");
-ledcWrite(H3_val, 0); //H3
-ledcWrite(L3_val, 0); //L3
 while(1){    
     if(!emergency&&!opennedMenu){
     for(int Cycle = 0; Cycle <= 480; Cycle=Cycle+2){   
@@ -102,7 +102,7 @@ while(1){
         if((Cycle==240)||(Cycle==480)){
         motor2(0,0,0,0,0,0); //H1 H2 H3 L1 L2 L3
         }
-        if((Cycle>0)&&(Cycle<240)){   
+        if((Cycle>=0)&&(Cycle<240)){   
         motor2(0,1023,0,SINE_TABLE[SinMode][Cycle],0,0); //H1 H2 H3 L1 L2 L3
         }
         if((Cycle>240)&&(Cycle<480)){   
@@ -117,7 +117,7 @@ while(1){
         if(k>1.0){k=1.0;}}
     }
     else{
-        motor2(0,0,0,0,0,0); //H1 H2 H3 L1 L2 L3
+        motor(0,0,0,0,0,0); //H1 H2 H3 L1 L2 L3
         k=0.2;
         vTaskDelay(1000/portTICK_PERIOD_MS);  
     } 
