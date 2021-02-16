@@ -1,35 +1,16 @@
 #include <Arduino.h>
 #include "Filter.h"
 #include "GyverButton.h"
+#include "PCA9557.h"
 
+PCA9557 Out;
+SemaphoreHandle_t i2c_mutex;
 GButton butt1(encBtn); 
 
 void data();
-
-void motor(int H1_,int H2_,int H3_, int L1_,int L2_,int L3_){
-    H1_=H1_*k*k_Freq; 
-    H2_=H2_*k*k_Freq;
-    H3_=H3_*k*k_Freq;
-    L1_=L1_*k*k_Freq;
-    L2_=L2_*k*k_Freq;
-    L3_=L3_*k*k_Freq; 
-    ledcWrite(L1_val, L1_); //L1
-    ledcWrite(L2_val, L2_); //L2
-    ledcWrite(L3_val, L3_); //L3
-    ledcWrite(H1_val, H1_); //H1
-    ledcWrite(H2_val, H2_); //H2
-    ledcWrite(H3_val, H3_); //H3
-}
-
-void motor2(int H1_,int H2_,int H3_, int L1_,int L2_,int L3_){
-    L1_=L1_*k*k_Freq;
-    L2_=L2_*k*k_Freq;
-    ledcWrite(L1_val, L1_); //L1
-    ledcWrite(L2_val, L2_); //L2
-    ledcWrite(H1_val, H1_); //H1
-    ledcWrite(H2_val, H2_); //H2
-    
-}
+void OUT();
+void motor(int H1_,int H2_,int H3_, int L1_,int L2_,int L3_);
+void motor2(int H1_,int H2_,int H3_, int L1_,int L2_,int L3_);
 
 void SPWM( void * parameter)
 {
@@ -173,11 +154,17 @@ void Servises( void * parameter)
     
     Serial.println("Servises");
     data();
-    
+
     Wire.begin(21,22, 100000);
+
+    xSemaphoreTake(i2c_mutex, portMAX_DELAY);
+    Out.setMode(IO_OUTPUT);
+    Out.setState(IO7,IO_HIGH);
+        
     u8g2.begin();
     u8g2.enableUTF8Print();	
     u8g2.setFont(fontName);
+    xSemaphoreGive(i2c_mutex);
 
     butt1.setDebounce(80);
     butt1.setTimeout(300);
@@ -214,8 +201,7 @@ while(1){
     u8g2.firstPage();
     do nav.doOutput(); while(u8g2.nextPage());
 
-
-    vTaskDelay(50/portTICK_PERIOD_MS);  
+    OUT();
     }
 }
 
@@ -232,4 +218,86 @@ void data(){
     if((k_menu<1)||(k_menu>4)){k_menu=1;}
     step = step*k_menu;
     ready_data = true;
+}
+
+void OUT()
+{
+//Byte: 0 - 0%    1 - 25%     2 - 50%     3 - 75%     4 - 100%
+    xSemaphoreTake(i2c_mutex, portMAX_DELAY);
+    if(O1==4){Out.setState(IO1,IO_HIGH);}
+    else{Out.setState(IO1,IO_LOW);}
+    if(O2==4){Out.setState(IO2,IO_HIGH);}
+    else{Out.setState(IO2,IO_LOW);}
+    if(O3==4){Out.setState(IO3,IO_HIGH);}
+    else{Out.setState(IO3,IO_LOW);}
+    if(O4==4){Out.setState(IO4,IO_HIGH);}
+    else{Out.setState(IO4,IO_LOW);}
+    if(O5==4){Out.setState(IO5,IO_HIGH);}
+    else{Out.setState(IO5,IO_LOW);}
+    if(O6==4){Out.setState(IO6,IO_HIGH);}
+    else{Out.setState(IO6,IO_LOW);}
+    
+    if(O1>=3){Out.setState(IO1,IO_HIGH);}
+    else{Out.setState(IO1,IO_LOW);}
+    if(O2>=3){Out.setState(IO2,IO_HIGH);}
+    else{Out.setState(IO2,IO_LOW);}
+    if(O3>=3){Out.setState(IO3,IO_HIGH);}
+    else{Out.setState(IO3,IO_LOW);}
+    if(O4>=3){Out.setState(IO4,IO_HIGH);}
+    else{Out.setState(IO4,IO_LOW);}
+    if(O5>=3){Out.setState(IO5,IO_HIGH);}
+    else{Out.setState(IO5,IO_LOW);}
+    if(O6>=3){Out.setState(IO6,IO_HIGH);}
+    else{Out.setState(IO6,IO_LOW);}
+
+    if(O1>=2){Out.setState(IO1,IO_HIGH);}
+    else{Out.setState(IO1,IO_LOW);}
+    if(O2>=2){Out.setState(IO2,IO_HIGH);}
+    else{Out.setState(IO2,IO_LOW);}
+    if(O3>=2){Out.setState(IO3,IO_HIGH);}
+    else{Out.setState(IO3,IO_LOW);}
+    if(O4>=2){Out.setState(IO4,IO_HIGH);}
+    else{Out.setState(IO4,IO_LOW);}
+    if(O5>=2){Out.setState(IO5,IO_HIGH);}
+    else{Out.setState(IO5,IO_LOW);}
+    if(O6>=2){Out.setState(IO6,IO_HIGH);}
+    else{Out.setState(IO6,IO_LOW);}
+
+    if(O1>=1){Out.setState(IO1,IO_HIGH);}
+    else{Out.setState(IO1,IO_LOW);}
+    if(O2>=1){Out.setState(IO2,IO_HIGH);}
+    else{Out.setState(IO2,IO_LOW);}
+    if(O3>=1){Out.setState(IO3,IO_HIGH);}
+    else{Out.setState(IO3,IO_LOW);}
+    if(O4>=1){Out.setState(IO4,IO_HIGH);}
+    else{Out.setState(IO4,IO_LOW);}
+    if(O5>=1){Out.setState(IO5,IO_HIGH);}
+    else{Out.setState(IO5,IO_LOW);}
+    if(O6>=1){Out.setState(IO6,IO_HIGH);}
+    else{Out.setState(IO6,IO_LOW);}
+    xSemaphoreGive(i2c_mutex);
+}
+
+void motor(int H1_,int H2_,int H3_, int L1_,int L2_,int L3_){
+    H1_=H1_*k*k_Freq; 
+    H2_=H2_*k*k_Freq;
+    H3_=H3_*k*k_Freq;
+    L1_=L1_*k*k_Freq;
+    L2_=L2_*k*k_Freq;
+    L3_=L3_*k*k_Freq; 
+    ledcWrite(L1_val, L1_); //L1
+    ledcWrite(L2_val, L2_); //L2
+    ledcWrite(L3_val, L3_); //L3
+    ledcWrite(H1_val, H1_); //H1
+    ledcWrite(H2_val, H2_); //H2
+    ledcWrite(H3_val, H3_); //H3
+}
+
+void motor2(int H1_,int H2_,int H3_, int L1_,int L2_,int L3_){
+    L1_=L1_*k*k_Freq;
+    L2_=L2_*k*k_Freq;
+    ledcWrite(L1_val, L1_); //L1
+    ledcWrite(L2_val, L2_); //L2
+    ledcWrite(H1_val, H1_); //H1
+    ledcWrite(H2_val, H2_); //H2
 }

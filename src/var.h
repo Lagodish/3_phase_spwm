@@ -58,6 +58,13 @@ uint8_t BRT_Disp = 30;
 uint8_t timer_0 = 0;
 int V_Print = 0;
 
+byte O1=1;
+byte O2=1;
+byte O3=2;
+byte O4=3;
+byte O5=3;
+byte O6=4;
+
 static uint16_t SINE_TABLE[2][483] =
 {
 {0,0,1,2,3,4,6,9,11,14,17,21,
