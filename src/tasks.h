@@ -174,7 +174,7 @@ void Servises( void * parameter)
     Serial.println("Servises");
     data();
     
-    Wire.begin(21,22, 50000);
+    Wire.begin(21,22, 100000);
     u8g2.begin();
     u8g2.enableUTF8Print();	
     u8g2.setFont(fontName);
