@@ -5,16 +5,17 @@
 #include <tasks.h>
 
 void setup() {
-
   Serial.begin(9600);
-  Serial.println("\nBooting");
+  Serial.println(F("\nBooting"));
   disableCore0WDT();
-
-  xTaskCreatePinnedToCore(Servises, "Servises", 10000, NULL, 2, &ServisesHandle, 0);       
-  xTaskCreatePinnedToCore(MathServises, "MathServises", 10000, NULL, 1, &MathServisesHandle, 0);
+      
+  
+  xTaskCreatePinnedToCore(Main, "Main", 10000, NULL, 2, &Main_Handle, 0); 
 
   while(!ready_data){vTaskDelay(500/portTICK_PERIOD_MS);}
-  xTaskCreatePinnedToCore(SPWM, "SPWM", 10000, NULL, 2, &SPWMHandle, 1);
+  xTaskCreatePinnedToCore(Servise, "Servise", 5000, NULL, 1, &Servise_Handle, 0);
+  xTaskCreatePinnedToCore(PCA9557, "PCA9557", 5000, NULL, 1, &PCA9557_Handle, 0); 
+  xTaskCreatePinnedToCore(SPWM, "SPWM", 5000, NULL, 2, &SPWM_Handle, 1);
 }
 
 void loop()

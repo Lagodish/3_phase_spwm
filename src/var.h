@@ -1,9 +1,10 @@
 #include <Arduino.h>
 
 Preferences preferences;
-TaskHandle_t ServisesHandle;
-TaskHandle_t MathServisesHandle;
-TaskHandle_t SPWMHandle;
+TaskHandle_t Main_Handle;
+TaskHandle_t Servise_Handle;
+TaskHandle_t PCA9557_Handle;
+TaskHandle_t SPWM_Handle;
 
 
 const int L1 = 33;  
@@ -38,7 +39,7 @@ bool opennedMenu = false;
 bool reboot = false;
 bool SinMode = false;
 bool PhaseMode = false;
-bool ready_data = false;
+bool ready_data = false; //DOTO
 
 double k = 0.2;
 uint8_t k_menu = 1;
