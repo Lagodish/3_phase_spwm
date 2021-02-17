@@ -2,10 +2,12 @@
 #include "Filter.h"
 #include "GyverButton.h"
 #include "PCA9557.h"
+#include <SoftwareSerial.h>
 
 PCA9557 Out;
 SemaphoreHandle_t i2c_mutex;
-GButton butt1(encBtn); 
+GButton butt1(encBtn);
+SoftwareSerial SoftSerial; 
 
 void data();
 void OUT();
@@ -154,17 +156,17 @@ void Servises( void * parameter)
     
     Serial.println("Servises");
     data();
-
+    SoftSerial.begin(9600, SWSERIAL_8N1, 13, 15, false, 95, 11);
     Wire.begin(21,22, 100000);
 
-    xSemaphoreTake(i2c_mutex, portMAX_DELAY);
+   // xSemaphoreTake(i2c_mutex, portMAX_DELAY);
     Out.setMode(IO_OUTPUT);
     Out.setState(IO7,IO_HIGH);
         
     u8g2.begin();
     u8g2.enableUTF8Print();	
     u8g2.setFont(fontName);
-    xSemaphoreGive(i2c_mutex);
+    //xSemaphoreGive(i2c_mutex);
 
     butt1.setDebounce(80);
     butt1.setTimeout(300);
@@ -193,6 +195,14 @@ while(1){
     if(butt1.isClick()){nav.doNav(enterCmd);}
 
     if(reboot&&!opennedMenu){ESP.restart();}
+
+    while (SoftSerial.available() > 0) {
+		Serial.write(SoftSerial.read());
+        //SoftSerial.parseInt();
+	}
+	while (Serial.available() > 0) {
+		SoftSerial.write(Serial.read());
+	}
 
     //nav.doInput();
     nav.poll();
@@ -223,7 +233,7 @@ void data(){
 void OUT()
 {
 //Byte: 0 - 0%    1 - 25%     2 - 50%     3 - 75%     4 - 100%
-    xSemaphoreTake(i2c_mutex, portMAX_DELAY);
+   // xSemaphoreTake(i2c_mutex, portMAX_DELAY);
     if(O1==4){Out.setState(IO1,IO_HIGH);}
     else{Out.setState(IO1,IO_LOW);}
     if(O2==4){Out.setState(IO2,IO_HIGH);}
@@ -275,7 +285,7 @@ void OUT()
     else{Out.setState(IO5,IO_LOW);}
     if(O6>=1){Out.setState(IO6,IO_HIGH);}
     else{Out.setState(IO6,IO_LOW);}
-    xSemaphoreGive(i2c_mutex);
+   // xSemaphoreGive(i2c_mutex);
 }
 
 void motor(int H1_,int H2_,int H3_, int L1_,int L2_,int L3_){
