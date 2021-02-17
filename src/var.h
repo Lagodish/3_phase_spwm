@@ -65,6 +65,13 @@ byte O4=3;
 byte O5=3;
 byte O6=4;
 
+uint8_t flap_1 = 25;
+uint8_t flap_2 = 25;
+uint8_t flap_3 = 50;
+uint8_t flap_4 = 75;
+uint8_t flap_5 = 75;
+uint8_t flap_6 = 100;
+
 static uint16_t SINE_TABLE[2][483] =
 {
 {0,0,1,2,3,4,6,9,11,14,17,21,

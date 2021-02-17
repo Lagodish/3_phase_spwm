@@ -88,7 +88,15 @@ result action7(eventMask e,navNode& nav, prompt &item) {
     return proceed;
 }
 
-
+result action8(eventMask e,navNode& nav, prompt &item) {
+    O1 = flap_1 / 25;
+    O2 = flap_2 / 25;
+    O3 = flap_3 / 25;
+    O4 = flap_4 / 25;
+    O5 = flap_5 / 25;
+    O6 = flap_6 / 25;    
+    return proceed;
+}
 
 TOGGLE(PhaseMode,setPhase,"Phase: ",action5,enterEvent,noStyle//,doExit,enterEvent,noStyle
   ,VALUE("3",HIGH,doNothing,noEvent)
@@ -101,12 +109,22 @@ TOGGLE(SinMode,setSin,"Sin Mode: ",action7,enterEvent,noStyle//,doExit,enterEven
   ,VALUE("THIPWM",LOW,doNothing,noEvent)
 );
 
+MENU(subMenu, "Flaps", doNothing, anyEvent, noStyle
+  ,FIELD(flap_1,"Out 1"," %",0,100,25,0,action8, enterEvent, wrapStyle)
+  ,FIELD(flap_2,"Out 2"," %",0,100,25,0,action8, enterEvent, wrapStyle)
+  ,FIELD(flap_3,"Out 3"," %",0,100,25,0,action8, enterEvent, wrapStyle)
+  ,FIELD(flap_4,"Out 4"," %",0,100,25,0,action8, enterEvent, wrapStyle)
+  ,FIELD(flap_5,"Out 5"," %",0,100,25,0,action8, enterEvent, wrapStyle)
+  ,FIELD(flap_6,"Out 6"," %",0,100,25,0,action8, enterEvent, wrapStyle)
+  , EXIT("<Back")
+);
 
 MENU(mainMenu, "Menu" ,doNothing,noEvent,noStyle
   ,FIELD(Power_set,"Power"," %",40,130,1,0,action1,enterEvent,noStyle)
   ,FIELD(k_menu,"StartTime","X",1,4,1,0,action3,enterEvent,noStyle)
   ,SUBMENU(setPhase)
   ,SUBMENU(setSin)
+  ,SUBMENU(subMenu)
   ,FIELD(BRT_Disp,"Bright"," %",0,100,10,0,action2,enterEvent,noStyle)
   ,EXIT("Back")
 );
