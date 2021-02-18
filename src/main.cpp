@@ -14,7 +14,7 @@ void setup() {
 
   while(!ready_data){vTaskDelay(500/portTICK_PERIOD_MS);}
   xTaskCreatePinnedToCore(Servise, "Servise", 5000, NULL, 1, &Servise_Handle, 0);
-  xTaskCreatePinnedToCore(PCA9557, "PCA9557", 5000, NULL, 1, &PCA9557_Handle, 0); 
+  xTaskCreatePinnedToCore(Flaps, "Flaps", 5000, NULL, 1, &Flaps_Handle, 0); 
   xTaskCreatePinnedToCore(SPWM, "SPWM", 5000, NULL, 2, &SPWM_Handle, 1);
 }
 

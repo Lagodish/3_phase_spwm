@@ -105,7 +105,7 @@ while(1){
 
 void Servise( void * parameter)
 {  
-    Serial.println(F("Main"));
+    Serial.println(F("Servise"));
 
     if(PhaseMode){ // 3ph
     while(1){
@@ -193,9 +193,30 @@ while(1){
     if(butt1.isClick()){nav.doNav(enterCmd);}
 
     if(reboot&&!opennedMenu){ESP.restart();}
-
+    
     while (SoftSerial.available() > 0) {
-		Serial.write(SoftSerial.read());
+        int tempSerial = SoftSerial.parseInt();
+        if(tempSerial>99&&tempSerial<1000){
+		Serial.print(tempSerial/100); //ID 1..9
+        Serial.print("   ");    
+        Serial.print(tempSerial/10%10); //Motor = 0 && Flaps = 1
+        Serial.print("   ");
+        Serial.println(tempSerial%10);  //Power: Motor 0..9 or Flaps 0..4
+
+        if(tempSerial/10%10==0&&tempSerial%10>=0&&tempSerial%10<10){ //Motor
+            Power_set = map(tempSerial%10, 0, 9, 40, 130);
+        }
+        if(tempSerial/10%10==1&&tempSerial%10>=0&&tempSerial%10<5){ //Flaps
+            if(tempSerial/100==1){flap_1 = tempSerial%10*25; O1 = tempSerial%10;} 
+            if(tempSerial/100==2){flap_2 = tempSerial%10*25; O2 = tempSerial%10;} 
+            if(tempSerial/100==3){flap_3 = tempSerial%10*25; O3 = tempSerial%10;} 
+            if(tempSerial/100==4){flap_4 = tempSerial%10*25; O4 = tempSerial%10;} 
+            if(tempSerial/100==5){flap_5 = tempSerial%10*25; O5 = tempSerial%10;} 
+            if(tempSerial/100==6){flap_6 = tempSerial%10*25; O6 = tempSerial%10;} 
+        }
+
+        }
+        //SoftSerial.
         //SoftSerial.parseInt();
 	}
 	while (Serial.available() > 0) {
@@ -213,7 +234,7 @@ while(1){
     }
 }
 
-void PCA9557( void * parameter)
+void Flaps( void * parameter)
 {  
 //Byte: 0 - 0%    1 - 25%     2 - 50%     3 - 75%     4 - 100%
 vTaskDelay(1000/portTICK_PERIOD_MS);  
