@@ -153,15 +153,13 @@ void Main( void * parameter)
     
     i2c_mutex = xSemaphoreCreateMutex();
     xSemaphoreTake(i2c_mutex, portMAX_DELAY);
-    Wire.begin(21,22, 100000);
-    Out.setMode(IO_OUTPUT);
-    Out.setState(IO7,IO_HIGH);
+    Wire.begin(21,22);
     u8g2.begin();
     u8g2.enableUTF8Print();	
     u8g2.setFont(fontName);
     xSemaphoreGive(i2c_mutex);
 
-    SoftSerial.begin(9600, SWSERIAL_8N1, 13, 15, false, 95, 11);
+    SoftSerial.begin(9600, SWSERIAL_8N1, 13, 15, false);
 
     butt1.setDebounce(80);
     butt1.setTimeout(300);
@@ -194,7 +192,7 @@ while(1){
 
     if(reboot&&!opennedMenu){ESP.restart();}
     
-    while (SoftSerial.available() > 0) {
+    while (SoftSerial.available() > 0) { //  SoftSerial
         int tempSerial = SoftSerial.parseInt();
         if(tempSerial>99&&tempSerial<1000){
 		Serial.print(tempSerial/100); //ID 1..9
@@ -216,11 +214,6 @@ while(1){
         }
 
         }
-        //SoftSerial.
-        //SoftSerial.parseInt();
-	}
-	while (Serial.available() > 0) {
-		SoftSerial.write(Serial.read());
 	}
 
     //nav.doInput();
@@ -238,6 +231,11 @@ void Flaps( void * parameter)
 {  
 //Byte: 0 - 0%    1 - 25%     2 - 50%     3 - 75%     4 - 100%
 vTaskDelay(1000/portTICK_PERIOD_MS);  
+xSemaphoreTake(i2c_mutex, portMAX_DELAY);
+Out.reset();
+Out.setMode(IO_OUTPUT);
+Out.setState(IO7,IO_HIGH);
+xSemaphoreGive(i2c_mutex); 
 while(1){
     xSemaphoreTake(i2c_mutex, portMAX_DELAY);
     if(O1==4){Out.setState(IO1,IO_HIGH);}
